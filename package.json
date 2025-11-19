@@ -1,0 +1,37 @@
+{
+  "name": "purrfect-hub",
+  "version": "1.0.0",
+  "description": "A lightning-fast, feature-rich cat website built on Cloudflare Workers",
+  "main": "src/worker.js",
+  "scripts": {
+    "dev": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js dev",
+    "deploy": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js deploy",
+    "db:create": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 create purrfect-hub-db",
+    "db:migrate": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 execute purrfect-hub-db --file=./src/db/schema.sql",
+    "r2:create": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js r2 bucket create purrfect-hub-uploads",
+    "db:create:prod": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 create purrfect-hub-db --remote",
+    "db:migrate:prod": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 execute purrfect-hub-db --file=./src/db/schema.sql --remote",
+    "r2:create:prod": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js r2 bucket create purrfect-hub-uploads --remote",
+    "db:query": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 execute purrfect-hub-db --command",
+    "db:backup": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 backup create purrfect-hub-db",
+    "sync:tags": "node scripts/sync-tags.js",
+    "logs": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js tail",
+    "clean": "rm -rf dist .C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js"
+  },
+  "keywords": [
+    "cats",
+    "cloudflare",
+    "workers",
+    "d1",
+    "edge",
+    "serverless",
+    "api",
+    "cataas"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^4.47.0"
+  },
+  "dependencies": {}
+}

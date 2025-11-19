@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PurrfectHub 🐱 - Your Ultimate Cat Paradise</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #9D84B7;
+            --primary-light: #C4A4E0;
+            --secondary: #FFB347;
+            --secondary-light: #FF8C69;
+            --accent: #A8E6CF;
+            --bg: #FFF9F0;
+            --card-bg: #FFFFFF;
+            --text: #2D3748;
+            --text-light: #718096;
+            --shadow: rgba(157, 132, 183, 0.1);
+            --border-radius: 20px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #FFF5E6 100%);
+            color: var(--text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Quicksand', sans-serif;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            padding: 1.5rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+        }
+
+        .upload-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 4px 20px rgba(255, 179, 71, 0.4);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            z-index: 99;
+        }
+
+        .upload-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 30px rgba(255, 179, 71, 0.6);
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            padding: 4rem 0;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+
+        /* Cat Display Section */
+        .cat-display {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            box-shadow: 0 10px 40px var(--shadow);
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cat-image {
+            max-width: 100%;
+            max-height: 500px;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            object-fit: contain;
+            transition: transform 0.3s ease;
+        }
+
+        .cat-image:hover {
+            transform: scale(1.02);
+        }
+
+        .loading {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .loading-spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--primary-light);
+            border-top: 4px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Navigation Controls - Bottom Center */
+        .generator-nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 0.3em;
+        }
+
+        .nav-controls {
+            display: flex;
+            gap: 1rem;
+            background: rgba(26, 26, 26, 0.8);
+            backdrop-filter: blur(20px);
+            border-radius: 50px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+            padding: 10px;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-light);
+            font-size: 1.8rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0.5rem;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-btn:hover {
+            background: rgba(157, 132, 183, 0.3);
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .control-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .control-card h3 {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+            color: white;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--shadow);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent) 0%, #90D4BA 100%);
+        }
+
+        input[type="text"], select {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #E2E8F0;
+            border-radius: 12px;
+            font-size: 1rem;
+            margin-top: 0.5rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .tag-suggestions {
+            position: absolute;
+            background: white;
+            border: 2px solid var(--primary-light);
+            border-radius: 12px;
+            margin-top: 0.5rem;
+            max-height: 200px;
+            overflow-y: auto;
+            width: calc(100% - 3rem);
+            z-index: 10;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .tag-suggestion {
+            padding: 0.8rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .tag-suggestion:hover {
+            background: var(--primary-light);
+            color: white;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin: 0.5rem 0;
+            border-bottom: 2px solid #E2E8F0;
+        }
+
+        .tab {
+            padding: 0.4rem 1rem 1rem;
+            background: none;
+            border: none;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-light);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .tab-content {
+            position: relative;
+        }
+
+        /* HTTP Cats Grid */
+        .http-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .http-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px var(--shadow);
+        }
+
+        .http-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px var(--shadow);
+        }
+
+        .http-card img {
+            width: 100%;
+            border-radius: 12px;
+            margin-bottom: 0.5rem;
+        }
+
+        .http-code {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        /* Breed Cards */
+        .breed-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .breed-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: 0 4px 20px var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .breed-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .breed-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .breed-info {
+            padding: 1.5rem;
+        }
+
+        .breed-name {
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-close {
+            float: right;
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .http-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Paw print cursor */
+        .paw-cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.5;
+            transition: opacity 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div class="tabs">
+            <button class="tab active" data-tab="generator">Just Cat</button>
+            <button class="tab" data-tab="http-cats">HTTP Cats</button>
+            <button class="tab" data-tab="breeds">Breeds</button>
+        </div>
+
+        <!-- Cat Generator Tab -->
+        <div id="generator" class="tab-content active">
+            <div class="cat-display" id="catDisplay">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading adorable cat...</p>
+                </div>
+            </div>
+            <div class="generator-nav">
+                <div class="nav-controls">
+                    <button class="nav-btn" onclick="loadRandomCat()" title="Random Cat">🎲</button>
+                    <button class="nav-btn" onclick="loadRandomGif()" title="Cat GIF">🎬</button>
+                    <button class="nav-btn" title="Download">⬇️</button>
+                </div>
+            </div>
+
+            <!-- <div class="controls">
+                <div class="control-card">
+                    <h3>🎲 Random Cat</h3>
+                    <button class="btn" onclick="loadRandomCat()">Get Random Cat</button>
+                    <button class="btn btn-secondary" onclick="loadRandomGif()">Get Cat GIF</button>
+                </div>
+
+                <div class="control-card">
+                    <h3>✏️ Add Text</h3>
+                    <input type="text" id="catText" placeholder="Enter text for your cat...">
+                    <button class="btn btn-accent" onclick="loadCatWithText()">Generate Cat Meme</button>
+                </div>
+
+                <div class="control-card" style="position: relative;">
+                    <h3>🏷️ Filter by Tag</h3>
+                    <input type="text" id="tagInput" placeholder="Search tags..." oninput="searchTags()">
+                    <div id="tagSuggestions" class="tag-suggestions" style="display: none;"></div>
+                    <button class="btn" onclick="loadCatByTag()">Find Cat by Tag</button>
+                </div>
+
+                <div class="control-card">
+                    <h3>😊 How are you feeling?</h3>
+                    <select id="moodSelect" onchange="loadCatByMood()">
+                        <option value="happy">😊 Happy</option>
+                        <option value="sad">😢 Sad</option>
+                        <option value="angry">😠 Angry</option>
+                        <option value="curious">🤔 Curious</option>
+                        <option value="sleepy">😴 Sleepy</option>
+                        <option value="excited">🤩 Excited</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin: 2rem 0;">
+                <h3 style="margin-bottom: 1rem;">💡 Cat Fact of the Moment</h3>
+                <p id="catFact" style="font-size: 1.1rem; color: var(--text-light); max-width: 800px; margin: 0 auto;"></p>
+            </div> -->
+        </div>
+
+        <!-- HTTP Cats Tab -->
+        <div id="http-cats" class="tab-content">
+            <div id="httpCatsGrid" class="http-grid"></div>
+        </div>
+
+        <!-- Breeds Tab -->
+        <div id="breeds" class="tab-content">
+            <div id="breedsGrid" class="breed-grid"></div>
+        </div>
+    </main>
+
+    <!-- Upload Button -->
+    <!-- <button class="upload-btn" onclick="openUploadModal()" title="Upload Your Cat">📤</button> -->
+
+    <!-- Upload Modal -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeUploadModal()">&times;</span>
+            <h2>Upload Your Cat 🐱</h2>
+            <form id="uploadForm" style="margin-top: 1.5rem;">
+                <input type="file" id="fileInput" accept="image/*" style="margin-bottom: 1rem;">
+                <input type="text" id="uploadTags" placeholder="Add tags (comma separated)">
+                <button type="submit" class="btn" style="margin-top: 1rem;">Upload</button>
+            </form>
+            <div id="uploadMessage" style="margin-top: 1rem; text-align: center;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '/api';
+        const CATAAS_API = 'https://cataas.com';
+        let allTags = [];
+        const blobImageCache = new Map();
+
+        // Initialize
+        async function init() {
+            loadRandomCat();
+            // loadCatFact();
+            // loadTags();
+            initTabs();
+        }
+
+        // Tab handling
+        function initTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    switchTab(tabName);
+                });
+            });
+        }
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+
+            if (tabName === 'http-cats') loadHTTPCats();
+            // if (tabName === 'breeds') loadBreeds();
+        }
+
+       async function cacheNextImage(url, key) {
+            let queryChar = url.includes('?') ? '&' : '?';
+            const uniqueUrl = `${url}${queryChar}_=${Math.random()}`;
+
+            const response = await fetch(uniqueUrl, { mode: 'cors' });
+            if (!response.ok) return;
+
+            const blob = await response.blob();
+            const objectUrl = URL.createObjectURL(blob);
+
+            // Replace existing
+            if (blobImageCache.has(key)) {
+                URL.revokeObjectURL(blobImageCache.get(key));
+            }
+
+            blobImageCache.set(key, objectUrl);
+        }
+
+        // Cat loading functions
+        async function loadRandomCat() {
+            showLoading();
+            try {
+                const uniqueUrl = `${CATAAS_API}/cat`;
+                let key = 'random-pic';
+                
+                if(blobImageCache.has(key)) {
+                    displayCat(blobImageCache.get(key));
+                } else {
+                    let url = `${uniqueUrl}?_=${Math.random()}`;
+                    displayCat(url);
+                }
+
+                cacheNextImage(uniqueUrl, key);
+            } catch (error) {
+                showError('Failed to load cat 😿');
+            }
+        }
+
+        async function loadRandomGif() {
+            showLoading();
+            try {
+                const uniqueUrl = `${CATAAS_API}/cat/gif`;
+                let key = 'random-gif';
+                
+                if(blobImageCache.has(key)) {
+                    displayCat(blobImageCache.get(key));
+                } else {
+                    let url = `${uniqueUrl}?_=${Math.random()}`;
+                    displayCat(url);
+                }
+
+                cacheNextImage(uniqueUrl, key);
+            } catch (error) {
+                showError('Failed to load GIF 😿');
+            }
+        }
+
+        async function loadCatWithText() {
+            const text = document.getElementById('catText').value.trim();
+            if (!text) {
+                alert('Please enter some text!');
+                return;
+            }
+
+            showLoading();
+            try {
+                const uniqueUrl = `${CATAAS_API}/cat/says/${encodeURIComponent(text)}`;
+
+                displayCat(uniqueUrl);
+            } catch (error) {
+                showError('Failed to create meme 😿');
+            }
+        }
+
+        async function loadCatByTag() {
+            const tag = document.getElementById('tagInput').value.trim();
+            if (!tag) {
+                alert('Please enter a tag!');
+                return;
+            }
+            showLoading();
+            try {
+                const uniqueUrl = `${CATAAS_API}/cat/${encodeURIComponent(tag)}`;
+
+                displayCat(uniqueUrl);
+            } catch (error) {
+                showError('Failed to load cat 😿');
+            }
+        }
+
+        async function loadCatByMood() {
+            const mood = document.getElementById('moodSelect').value;
+            showLoading();
+            try {
+                const moodTags = {
+                    happy: 'cute,funny',
+                    sad: 'cute,sleep',
+                    angry: 'funny,grumpy',
+                    curious: 'cute',
+                    sleepy: 'sleep,cute',
+                    excited: 'funny,cute'
+                };
+
+                const tags = moodTags[mood] || 'cute';
+                const uniqueUrl = `${CATAAS_API}/cat/${encodeURIComponent(tags)}`;
+
+                displayCat(uniqueUrl);
+            } catch (error) {
+                showError('Failed to load mood cat 😿');
+            }
+        }
+
+        function displayCat(url) {
+            const display = document.getElementById('catDisplay');
+            display.innerHTML = `<img src="${url}" alt="Cat" class="cat-image fade-in" loading="lazy">`;
+        }
+
+        function showLoading() {
+            const display = document.getElementById('catDisplay');
+            display.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <p>Loading adorable cat...</p>
+                </div>
+            `;
+        }
+
+        function showError(message) {
+            const display = document.getElementById('catDisplay');
+            display.innerHTML = `<p style="color: var(--text-light);">${message}</p>`;
+        }
+
+        // Tag search
+        async function loadTags() {
+            try {
+                const response = await fetch(`${API_BASE}/tags`);
+                const data = await response.json();
+                if (data.success) {
+                    allTags = data.data.map(t => t.name);
+                }
+            } catch (error) {
+                console.error('Failed to load tags:', error);
+            }
+        }
+
+        async function searchTags() {
+            const query = document.getElementById('tagInput').value.trim();
+            if (!query) {
+                document.getElementById('tagSuggestions').style.display = 'none';
+                return;
+            }
+
+            const filtered = allTags.filter(tag => tag.toLowerCase().includes(query.toLowerCase())).slice(0, 10);
+            
+            const suggestionsDiv = document.getElementById('tagSuggestions');
+            if (filtered.length > 0) {
+                suggestionsDiv.innerHTML = filtered.map(tag => 
+                    `<div class="tag-suggestion" onclick="selectTag('${tag}')">${tag}</div>`
+                ).join('');
+                suggestionsDiv.style.display = 'block';
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
+        }
+
+        function selectTag(tag) {
+            document.getElementById('tagInput').value = tag;
+            document.getElementById('tagSuggestions').style.display = 'none';
+        }
+
+        // Cat fact
+        async function loadCatFact() {
+            try {
+                const response = await fetch(`${API_BASE}/fact`);
+                const data = await response.json();
+                if (data.success) {
+                    document.getElementById('catFact').textContent = data.data.fact;
+                }
+            } catch (error) {
+                console.error('Failed to load fact:', error);
+            }
+        }
+
+        // HTTP Cats
+        async function loadHTTPCats() {
+            const codes = [100, 200, 201, 204, 206, 301, 302, 304, 307, 400, 401, 403, 404, 405, 406, 408, 410, 413, 414, 418, 429, 500, 502, 503, 504];
+            const grid = document.getElementById('httpCatsGrid');
+            
+            grid.innerHTML = codes.map(code => `
+                <div class="http-card fade-in" onclick="showHTTPCat(${code})">
+                    <img src="https://http.cat/${code}" alt="HTTP ${code}" loading="lazy">
+                    <div class="http-code">${code}</div>
+                </div>
+            `).join('');
+        }
+
+        function showHTTPCat(code) {
+            displayCat(`https://http.cat/${code}`);
+            switchTab('generator');
+        }
+
+        // Breeds
+        async function loadBreeds() {
+            try {
+                const response = await fetch(`${API_BASE}/breeds`);
+                const data = await response.json();
+                if (data.success) {
+                    const grid = document.getElementById('breedsGrid');
+                    grid.innerHTML = data.data.map(breed => `
+                        <div class="breed-card fade-in">
+                            <img src="${breed.image?.url || 'https://cataas.com/cat'}" alt="${breed.name}" loading="lazy">
+                            <div class="breed-info">
+                                <div class="breed-name">${breed.name}</div>
+                                <p>${breed.temperament || 'Adorable cat'}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Failed to load breeds:', error);
+            }
+        }
+
+        // Upload modal
+        function openUploadModal() {
+            document.getElementById('uploadModal').classList.add('active');
+        }
+
+        function closeUploadModal() {
+            document.getElementById('uploadModal').classList.remove('active');
+        }
+
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const fileInput = document.getElementById('fileInput');
+            const tags = document.getElementById('uploadTags').value;
+            const messageDiv = document.getElementById('uploadMessage');
+
+            if (!fileInput.files[0]) {
+                messageDiv.innerHTML = '<p style="color: red;">Please select a file!</p>';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('tags', tags);
+
+            messageDiv.innerHTML = '<p>Uploading...</p>';
+
+            try {
+                const response = await fetch(`${API_BASE}/upload`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    messageDiv.innerHTML = '<p style="color: green;">✓ Upload successful!</p>';
+                    setTimeout(() => {
+                        closeUploadModal();
+                        messageDiv.innerHTML = '';
+                    }, 2000);
+                } else {
+                    messageDiv.innerHTML = `<p style="color: red;">${data.error.message}</p>`;
+                }
+            } catch (error) {
+                messageDiv.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
+            }
+        });
+
+        // Initialize app
+        init();
+    </script>
+</body>
+</html>
