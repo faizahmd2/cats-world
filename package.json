@@ -1,34 +1,30 @@
 {
   "name": "purrfect-hub",
-  "version": "1.0.0",
-  "description": "A lightning-fast, feature-rich cat website built on Cloudflare Workers",
+  "version": "4.0.0",
+  "description": "Instagram for cats — Cloudflare Workers + D1 + R2",
   "main": "src/worker.js",
   "scripts": {
-    "dev": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js dev",
-    "deploy": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js deploy",
-    "db:create": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 create purrfect-hub-db",
-    "db:migrate": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 execute purrfect-hub-db --file=./src/db/schema.sql",
-    "r2:create": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js r2 bucket create purrfect-hub-uploads",
-    "db:create:prod": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 create purrfect-hub-db --remote",
-    "db:migrate:prod": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 execute purrfect-hub-db --file=./src/db/schema.sql --remote",
-    "r2:create:prod": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js r2 bucket create purrfect-hub-uploads --remote",
-    "db:query": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 execute purrfect-hub-db --command",
-    "db:backup": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js d1 backup create purrfect-hub-db",
-    "sync:tags": "node scripts/sync-tags.js",
-    "logs": "C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js tail",
-    "clean": "rm -rf dist .C:\\Users\\Md.Ahmad\\Documents\\helpers\\node-versions\\node-v20.18.3\\node.exe .\\node_modules\\wrangler\\bin\\wrangler.js"
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+
+    "db:create": "wrangler d1 create cats_db",
+    "db:migrate": "wrangler d1 execute cats_db --file=./src/db/schema.sql",
+    "db:migrate:prod": "wrangler d1 execute cats_db --file=./src/db/schema.sql --remote",
+
+    "db:migrate:v4": "wrangler d1 execute cats_db --file=./src/db/migration-v4-clean.sql",
+    "db:migrate:v4:prod": "wrangler d1 execute cats_db --file=./src/db/migration-v4-clean.sql --remote",
+
+    "r2:create": "wrangler r2 bucket create cats-bucket",
+
+    "sync": "node scripts/sync.js all",
+    "sync:facts": "node scripts/sync.js facts",
+    "sync:facts:prod": "node scripts/sync.js facts --remote",
+
+    "logs": "wrangler tail",
+    "clean": "rm -rf dist .wrangler"
   },
-  "keywords": [
-    "cats",
-    "cloudflare",
-    "workers",
-    "d1",
-    "edge",
-    "serverless",
-    "api",
-    "cataas"
-  ],
-  "author": "Your Name",
+  "keywords": ["cats", "cloudflare", "workers", "d1", "r2"],
+  "author": "",
   "license": "MIT",
   "devDependencies": {
     "wrangler": "^4.47.0"

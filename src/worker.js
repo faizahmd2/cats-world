@@ -1,373 +1,998 @@
+// ╔═══════════════════════════════════════════════════════╗
+// ║          PurrfectHub – Cloudflare Worker v4-clean     ║
+// ║  D1 DB · R2 BUCKET · Workers AI optional             ║
+// ╚═══════════════════════════════════════════════════════╝
+
+const CATAAS = 'https://cataas.com';
+const POLLINATIONS = 'https://image.pollinations.ai/prompt';
+
 import dashboardHTML from './index.html';
 
-const CATAAS_API = 'https://cataas.com';
-const CAT_API = 'https://api.thecatapi.com/v1';
-
-// Rate limiting configuration
-const RATE_LIMITS = {
-  api: { requests: 100, window: 60 }, // 100 req/min
-  upload: { requests: 50, window: 3600 }, // 50 req/hour
-  sync: { requests: 10, window: 3600 } // 10 req/hour
+const CORS = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Headers': 'Content-Type',
 };
 
 export default {
-  async fetch(request, env, ctx) {
-    const url = new URL(request.url);
+  async fetch(req, env, ctx) {
+    if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+
+    const url = new URL(req.url);
     const path = url.pathname;
 
-    // CORS headers
-    const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type',
-    };
-
-    if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders });
-    }
-
     try {
-      // Serve static HTML for root
       if (path === '/' || path === '/index.html') {
         return new Response(dashboardHTML, {
-          headers: { 'Content-Type': 'text/html', ...corsHeaders }
+          headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            ...CORS,
+          },
         });
       }
 
-      // API routes
+      if (path.startsWith('/r2/')) {
+        const key = path.slice(4);
+        const obj = await env.BUCKET.get(key);
+
+        if (!obj) return new Response('Not Found', { status: 404 });
+
+        return new Response(obj.body, {
+          headers: {
+            'Content-Type': obj.httpMetadata?.contentType || 'image/jpeg',
+            'Cache-Control': 'public, max-age=31536000, immutable',
+            ...CORS,
+          },
+        });
+      }
+
       if (path.startsWith('/api/')) {
-        const response = await handleAPI(path, request, env);
-        return new Response(JSON.stringify(response), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        const body = await routeAPI(path, req, env);
+        return new Response(JSON.stringify(body), {
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS,
+          },
         });
       }
 
-      // Serve static assets
       return new Response('Not Found', { status: 404 });
-
-    } catch (error) {
-      console.error('Worker error:', error);
-      return new Response(JSON.stringify({
-        success: false,
-        error: { code: 'INTERNAL_ERROR', message: 'Something went wrong' }
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
+    } catch (err) {
+      console.error(err);
+      return new Response(
+        JSON.stringify({
+          ok: false,
+          error: err.message || 'Internal error',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            ...CORS,
+          },
+        }
+      );
     }
   },
-
-  // Scheduled task to sync tags
-  async scheduled(event, env, ctx) {
-    ctx.waitUntil(syncTagsFromCataas(env));
-  }
 };
 
-// API Handler
-async function handleAPI(path, request, env) {
-  const segments = path.split('/').filter(Boolean);
-  const endpoint = segments[1]; // 'api' is segments[0]
+async function routeAPI(path, req, env) {
+  const seg = path.split('/').filter(Boolean);
+  const ep = seg[1];
 
-  // Rate limiting
-  const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-  const limitType = endpoint === 'upload' ? 'upload' : 'api';
-  
-  const rateLimitPassed = await checkRateLimit(env, clientIP, limitType);
-  if (!rateLimitPassed) {
-    return {
-      success: false,
-      error: {
-        code: 'RATE_LIMIT_EXCEEDED',
-        message: 'Too many requests. Please try again later.',
-        retryAfter: RATE_LIMITS[limitType].window
-      }
-    };
-  }
+  switch (ep) {
+    case 'auth':
+      return apiAuth(req, env);
 
-  // Route handling
-  switch (endpoint) {
-    case 'tags':
-      return await handleTags(segments, request, env);
+    case 'feed':
+      return apiFeed(req, env);
+
+    case 'memes':
+      return apiMemes(req, env);
+
     case 'upload':
-      return await handleUpload(request, env);
-    case 'breeds':
-      return await handleBreeds(env);
+      return apiUpload(req, env);
+
+    case 'save':
+      return apiSave(req, env, seg);
+
+    case 'like':
+      return apiLike(req, env);
+
+    case 'saves':
+      return apiGetSaves(req, env);
+
+    case 'ensure-cat':
+      return apiEnsureCat(req, env);
+
+    case 'meme-save':
+      return apiMemeSave(req, env);
+
+    case 'ai-image':
+      return apiAIImage(req, env);
+
+    case 'meme-text':
+      return apiMemeText(req, env);
+
     case 'fact':
-      return await handleFact(env);
-    case 'http-cats':
-      return await handleHTTPCats(segments);
-    case 'favorite':
-      return await handleFavorite(request, env);
+      return apiFact(env);
+
+    case 'captions':
+      return apiCaptions(req, env);
+
+    case 'stats':
+      return apiStats(env);
+
     default:
-      return { success: false, error: { code: 'NOT_FOUND', message: 'Endpoint not found' } };
+      return { ok: false, error: 'Unknown endpoint' };
   }
 }
 
-// Rate Limiting
-async function checkRateLimit(env, clientIP, type) {
-    return true; // Disabled for development
-  const key = `${type}:${clientIP}`;
-  const limit = RATE_LIMITS[type];
-  const now = Date.now();
-  
-  try {
-    const result = await env.DB.prepare(
-      'SELECT count, window_start FROM rate_limits WHERE key = ?'
-    ).bind(key).first();
+// ═══════════════════════════════════════════════════════════
+// Helpers
+// ═══════════════════════════════════════════════════════════
 
-    if (!result) {
-      await env.DB.prepare(
-        'INSERT INTO rate_limits (key, count, window_start, last_request) VALUES (?, 1, ?, ?)'
-      ).bind(key, now, now).run();
-      return true;
-    }
-
-    const windowStart = new Date(result.window_start).getTime();
-    const windowElapsed = (now - windowStart) / 1000;
-
-    if (windowElapsed > limit.window) {
-      // Reset window
-      await env.DB.prepare(
-        'UPDATE rate_limits SET count = 1, window_start = ?, last_request = ? WHERE key = ?'
-      ).bind(now, now, key).run();
-      return true;
-    }
-
-    if (result.count >= limit.requests) {
-      return false;
-    }
-
-    await env.DB.prepare(
-      'UPDATE rate_limits SET count = count + 1, last_request = ? WHERE key = ?'
-    ).bind(now, key).run();
-    return true;
-
-  } catch (error) {
-    console.error('Rate limit check error:', error);
-    return true; // Fail open
-  }
+function cleanUsername(v) {
+  return String(v || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_.-]/g, '')
+    .slice(0, 40);
 }
 
-// Tag Handlers
-async function handleTags(segments, request, env) {
-  const action = segments[2];
-
-  if (action === 'search') {
-    const query = new URL(request.url).searchParams.get('q');
-    if (!query) {
-      return { success: false, error: { code: 'MISSING_QUERY', message: 'Query is required' } };
-    }
-
-    const tags = await env.DB.prepare(
-      'SELECT name, count FROM tags WHERE name LIKE ? ORDER BY count DESC LIMIT 10'
-    ).bind(`%${query}%`).all();
-
-    return {
-      success: true,
-      data: tags.results || []
-    };
+function cleanTags(tags) {
+  if (Array.isArray(tags)) {
+    return tags
+      .map(t => String(t).trim().toLowerCase())
+      .filter(Boolean)
+      .slice(0, 12)
+      .join(',');
   }
 
-  // Get all tags
-  const tags = await env.DB.prepare(
-    'SELECT name, count FROM tags ORDER BY count DESC'
-  ).all();
+  return String(tags || '')
+    .split(',')
+    .map(t => t.trim().toLowerCase())
+    .filter(Boolean)
+    .slice(0, 12)
+    .join(',');
+}
+
+function extFromContentType(contentType) {
+  if (contentType.includes('png')) return 'png';
+  if (contentType.includes('webp')) return 'webp';
+  if (contentType.includes('gif')) return 'gif';
+  return 'jpg';
+}
+
+function publicR2Url(key) {
+  return `/r2/${key}`;
+}
+
+async function getUser(env, userId) {
+  if (!userId) return null;
+
+  return env.DB.prepare(
+    'SELECT id, username FROM users WHERE id = ?'
+  ).bind(userId).first();
+}
+
+async function createCatFromBlob(env, opts) {
+  const {
+    blob,
+    contentType = 'image/jpeg',
+    creatorId = null,
+    source = 'upload',
+    type = 'cat',
+    tags = '',
+    title = '',
+    caption = '',
+    sourceUrl = '',
+    memeTop = '',
+    memeBottom = '',
+    memePosition = '',
+  } = opts;
+
+  const id = crypto.randomUUID();
+  const ext = extFromContentType(contentType);
+  const folder = type === 'meme'
+    ? 'memes'
+    : type === 'upload'
+      ? 'uploads'
+      : type === 'generated'
+        ? 'generated'
+        : 'cats';
+
+  const key = `${folder}/${id}.${ext}`;
+  const arr = blob instanceof ArrayBuffer ? blob : await blob.arrayBuffer();
+
+  await env.BUCKET.put(key, arr, {
+    httpMetadata: { contentType },
+  });
+
+  const imageUrl = publicR2Url(key);
+
+  await env.DB.prepare(
+    `INSERT INTO cats (
+      id, creator_id, r2_key, image_url, source_url, source, type,
+      tags, title, caption, meme_top, meme_bottom, meme_position,
+      likes, views, status, created_at, modified_at
+    )
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+  ).bind(
+    id,
+    creatorId,
+    key,
+    imageUrl,
+    sourceUrl || imageUrl,
+    source,
+    type,
+    cleanTags(tags),
+    title,
+    caption,
+    memeTop,
+    memeBottom,
+    memePosition
+  ).run();
 
   return {
-    success: true,
-    data: tags.results || [],
-    cached: true
+    id,
+    creator_id: creatorId,
+    r2_key: key,
+    image_url: imageUrl,
+    source_url: sourceUrl || imageUrl,
+    source,
+    type,
+    tags: cleanTags(tags),
+    title,
+    caption,
+    likes: 0,
   };
 }
 
-// Upload Handler
-async function handleUpload(request, env) {
-  if (request.method !== 'POST') {
-    return { success: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Only POST allowed' } };
+async function createCatFromExternalUrl(env, opts) {
+  const {
+    url,
+    creatorId,
+    tags = '',
+    source = 'cataas',
+    type = 'cat',
+    title = '',
+    caption = '',
+  } = opts;
+
+  if (!url) throw new Error('Image URL required');
+
+  const imgRes = await fetch(url, {
+    headers: {
+      'User-Agent': 'PurrfectHub/1.0',
+    },
+  });
+
+  if (!imgRes.ok) {
+    throw new Error(`Could not fetch image: HTTP ${imgRes.status}`);
   }
 
-  try {
-    const formData = await request.formData();
-    const file = formData.get('file');
-    const tags = formData.get('tags') || '';
+  const contentType = imgRes.headers.get('content-type') || 'image/jpeg';
 
-    if (!file) {
-      return { success: false, error: { code: 'NO_FILE', message: 'No file uploaded' } };
-    }
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      return { success: false, error: { code: 'FILE_TOO_LARGE', message: 'File must be under 5MB' } };
-    }
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      return { success: false, error: { code: 'INVALID_TYPE', message: 'Only images allowed' } };
-    }
-
-    // Generate unique ID
-    const id = crypto.randomUUID();
-    const ext = file.name.split('.').pop();
-    const filename = `${id}.${ext}`;
-
-    // Upload to R2
-    await env.BUCKET.put(filename, file.stream(), {
-      httpMetadata: { contentType: file.type }
-    });
-
-    // Store metadata in D1
-    const clientIP = request.headers.get('CF-Connecting-IP') || 'unknown';
-    const ipHash = await hashIP(clientIP);
-
-    await env.DB.prepare(
-      'INSERT INTO uploads (id, filename, tags, ip_hash) VALUES (?, ?, ?, ?)'
-    ).bind(id, filename, tags, ipHash).run();
-
-    return {
-      success: true,
-      data: {
-        id: id,
-        url: `/uploads/${filename}`,
-        message: 'Upload successful!'
-      }
-    };
-
-  } catch (error) {
-    console.error('Upload error:', error);
-    return { success: false, error: { code: 'UPLOAD_FAILED', message: 'Upload failed' } };
+  if (!contentType.startsWith('image/')) {
+    throw new Error('URL did not return an image');
   }
+
+  const arr = await imgRes.arrayBuffer();
+
+  return createCatFromBlob(env, {
+    blob: arr,
+    contentType,
+    creatorId,
+    source,
+    type,
+    tags,
+    title,
+    caption,
+    sourceUrl: url,
+  });
 }
 
-// Breed Handler
-async function handleBreeds(env) {
-  // Cache breeds for 1 day
-  const cached = await env.DB.prepare(
-    'SELECT * FROM cat_facts WHERE source = "breeds" AND cached_at > datetime("now", "-1 day")'
-  ).first();
+async function ensureStableCat(env, body) {
+  const userId = body.userId || body.creatorId || null;
 
-  if (cached) {
-    return { success: true, data: JSON.parse(cached.fact), cached: true };
+  if (userId) {
+    const user = await getUser(env, userId);
+    if (!user) throw new Error('Invalid user. Please sign in again.');
   }
 
-  try {
-    const response = await fetch(`${CAT_API}/breeds`, {
-      headers: { 'x-api-key': env.CAT_API_KEY || '' }
-    });
-    const breeds = await response.json();
+  const catId = body.catId || '';
 
-    // Cache in DB
-    await env.DB.prepare(
-      'INSERT OR REPLACE INTO cat_facts (source, fact) VALUES (?, ?)'
-    ).bind('breeds', JSON.stringify(breeds.slice(0, 20))).run();
+  if (catId && !String(catId).startsWith('live-')) {
+    const existing = await env.DB.prepare(
+      `SELECT id, creator_id, r2_key, image_url, source_url, source, type,
+              tags, title, caption, likes, views, status, created_at, modified_at
+       FROM cats
+       WHERE id = ? AND status = 'active'`
+    ).bind(catId).first();
 
-    return { success: true, data: breeds.slice(0, 20) };
-  } catch (error) {
-    return { success: false, error: { code: 'API_ERROR', message: 'Failed to fetch breeds' } };
-  }
-}
-
-// Cat Fact Handler
-async function handleFact(env) {
-  const facts = [
-    "Cats sleep 70% of their lives, which means a 9-year-old cat has been awake for only three years!",
-    "A group of cats is called a 'clowder' and a group of kittens is called a 'kindle'.",
-    "Cats can rotate their ears 180 degrees and can hear sounds up to 64 kHz!",
-    "A cat's nose print is unique, similar to human fingerprints.",
-    "Cats have over 20 vocalizations, including the purr, meow, chirp, and hiss.",
-    "The first cat in space was French cat Felicette in 1963.",
-    "Cats can jump up to six times their length in a single bound!",
-    "A cat's whiskers are generally about the same width as their body.",
-    "Cats spend nearly 1/3 of their waking hours cleaning themselves.",
-    "The oldest known cat lived to be 38 years old!"
-  ];
-
-  const randomFact = facts[Math.floor(Math.random() * facts.length)];
-  return { success: true, data: { fact: randomFact } };
-}
-
-// Mood Handler
-async function handleMood(segments, env) {
-  const mood = segments[2];
-  const moodTags = {
-    happy: 'cute,funny',
-    sad: 'cute,sleep',
-    angry: 'funny,grumpy',
-    curious: 'cute',
-    sleepy: 'sleep,cute',
-    excited: 'funny,cute'
-  };
-
-  const tags = moodTags[mood] || 'cute';
-  return {
-    success: true,
-    data: {
-      url: `${CATAAS_API}/cat?tags=${tags}`,
-      mood: mood,
-      tags: tags
-    }
-  };
-}
-
-// HTTP Cats Handler
-async function handleHTTPCats(segments) {
-  const code = segments[2];
-  if (!code) {
-    return { success: false, error: { code: 'MISSING_CODE', message: 'Status code required' } };
+    if (existing) return existing;
   }
 
-  return {
-    success: true,
-    data: {
-      url: `https://http.cat/${code}`,
-      statusCode: code
-    }
-  };
-}
-
-// Favorite Handler
-async function handleFavorite(request, env) {
-  if (request.method !== 'POST') {
-    return { success: false, error: { code: 'METHOD_NOT_ALLOWED', message: 'Only POST allowed' } };
-  }
-
-  const body = await request.json();
-  const { catUrl, tags } = body;
+  const catUrl = body.catUrl || body.imageUrl || '';
 
   if (!catUrl) {
-    return { success: false, error: { code: 'MISSING_URL', message: 'Cat URL required' } };
+    throw new Error('catUrl required');
+  }
+
+  // If frontend sends a blob/form to /api/upload or /api/meme-save, those endpoints create directly.
+  // This path is for action on external API image URL.
+  return createCatFromExternalUrl(env, {
+    url: catUrl,
+    creatorId: userId,
+    tags: body.tags || '',
+    source: body.source || 'cataas',
+    type: body.type || 'cat',
+    title: body.title || '',
+    caption: body.caption || '',
+  });
+}
+
+function rowToCat(row) {
+  return {
+    id: row.id,
+    creatorId: row.creator_id || null,
+    url: row.image_url,
+    imageUrl: row.image_url,
+    sourceUrl: row.source_url,
+    source: row.source,
+    type: row.type,
+    tags: row.tags ? row.tags.split(',').filter(Boolean) : [],
+    title: row.title || '',
+    caption: row.caption || '',
+    memeTop: row.meme_top || '',
+    memeBottom: row.meme_bottom || '',
+    memePosition: row.meme_position || '',
+    likes: row.likes || 0,
+    views: row.views || 0,
+    createdAt: row.created_at,
+    modifiedAt: row.modified_at,
+    stable: true,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Auth
+// ═══════════════════════════════════════════════════════════
+
+async function apiAuth(req, env) {
+  if (req.method !== 'POST') return { ok: false, error: 'POST only' };
+
+  const body = await req.json().catch(() => ({}));
+  const username = cleanUsername(body.username);
+  const password = String(body.password || '').trim();
+
+  if (!username) return { ok: false, error: 'Username required' };
+  if (!password) return { ok: false, error: 'Password required' };
+
+  const existing = await env.DB.prepare(
+    'SELECT id, username, password FROM users WHERE username = ?'
+  ).bind(username).first();
+
+  if (existing) {
+    if (existing.password !== password) {
+      return {
+        ok: false,
+        code: 'PASSWORD_INCORRECT',
+        error: 'Password is incorrect. Choose a different username or enter the correct password.',
+      };
+    }
+
+    await env.DB.prepare(
+      'UPDATE users SET modified_at = CURRENT_TIMESTAMP WHERE id = ?'
+    ).bind(existing.id).run();
+
+    return {
+      ok: true,
+      data: {
+        id: existing.id,
+        username: existing.username,
+      },
+    };
   }
 
   const id = crypto.randomUUID();
-  await env.DB.prepare(
-    'INSERT INTO favorites (id, cat_url, tags) VALUES (?, ?, ?)'
-  ).bind(id, catUrl, tags || '').run();
 
-  return { success: true, data: { id: id, message: 'Favorite saved!' } };
+  await env.DB.prepare(
+    `INSERT INTO users (id, username, password)
+     VALUES (?, ?, ?)`
+  ).bind(id, username, password).run();
+
+  return {
+    ok: true,
+    data: {
+      id,
+      username,
+    },
+  };
 }
 
-// Sync tags from CATAAS (runs on schedule)
-async function syncTagsFromCataas(env) {
-  try {
-    const response = await fetch(`${CATAAS_API}/api/tags`);
-    const tags = await response.json();
+// ═══════════════════════════════════════════════════════════
+// Feed
+// ═══════════════════════════════════════════════════════════
 
-    for (const tag of tags) {
-      await env.DB.prepare(
-        'INSERT OR REPLACE INTO tags (name, count, last_synced) VALUES (?, 0, datetime("now"))'
-      ).bind(tag).run();
+async function apiFeed(req, env) {
+  const url = new URL(req.url);
+  const tag = url.searchParams.get('tag') || '';
+  const lim = Math.min(20, Math.max(4, parseInt(url.searchParams.get('limit') || '8')));
+
+  const dbLimit = Math.ceil(lim / 2);
+  let rows = [];
+
+  if (tag) {
+    const res = await env.DB.prepare(
+      `SELECT *
+       FROM cats
+       WHERE status = 'active'
+         AND type != 'meme'
+         AND tags LIKE ?
+       ORDER BY RANDOM()
+       LIMIT ?`
+    ).bind(`%${tag}%`, dbLimit).all();
+
+    rows = res.results || [];
+  } else {
+    const res = await env.DB.prepare(
+      `SELECT *
+       FROM cats
+       WHERE status = 'active'
+         AND type != 'meme'
+       ORDER BY RANDOM()
+       LIMIT ?`
+    ).bind(dbLimit).all();
+
+    rows = res.results || [];
+  }
+
+  const items = rows.map(rowToCat);
+
+  const need = lim - items.length;
+
+  if (need > 0) {
+    const fallbackTags = [
+      'cute', 'funny', 'sleeping', 'kitten', 'fluffy', 'grumpy',
+      'black', 'white', 'orange', 'playful', 'chonky', 'loaf',
+      'tabby', 'derp', 'tuxedo', 'calico',
+    ];
+
+    for (let i = 0; i < need; i++) {
+      const picked = tag || fallbackTags[Math.floor(Math.random() * fallbackTags.length)];
+      const seed = `${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`;
+      const catUrl = `${CATAAS}/cat/${encodeURIComponent(picked)}?v=${encodeURIComponent(seed)}`;
+
+      items.push({
+        id: `live-${crypto.randomUUID()}`,
+        url: catUrl,
+        imageUrl: catUrl,
+        sourceUrl: catUrl,
+        source: 'cataas',
+        type: 'cat',
+        tags: [picked],
+        title: '',
+        caption: '',
+        likes: 0,
+        views: 0,
+        stable: false,
+      });
     }
+  }
 
-    console.log(`Synced ${tags.length} tags from CATAAS`);
-  } catch (error) {
-    console.error('Tag sync error:', error);
+  items.sort(() => Math.random() - 0.5);
+
+  return {
+    ok: true,
+    data: items,
+    hasMore: true,
+  };
+}
+
+async function apiMemes(req, env) {
+  const url = new URL(req.url);
+  const lim = Math.min(30, Math.max(6, parseInt(url.searchParams.get('limit') || '18')));
+
+  const res = await env.DB.prepare(
+    `SELECT *
+     FROM cats
+     WHERE status = 'active'
+       AND type = 'meme'
+     ORDER BY created_at DESC
+     LIMIT ?`
+  ).bind(lim).all();
+
+  return {
+    ok: true,
+    data: (res.results || []).map(rowToCat),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Upload
+// ═══════════════════════════════════════════════════════════
+
+async function apiUpload(req, env) {
+  if (req.method !== 'POST') return { ok: false, error: 'POST only' };
+
+  const form = await req.formData();
+  const file = form.get('file');
+  const userId = String(form.get('userId') || '');
+  const tags = String(form.get('tags') || '');
+  const title = String(form.get('title') || '');
+  const caption = String(form.get('caption') || form.get('note') || '');
+
+  if (!file) return { ok: false, error: 'No file provided' };
+  if (!file.type.startsWith('image/')) return { ok: false, error: 'Images only' };
+  if (file.size > 6 * 1024 * 1024) return { ok: false, error: 'File too large. Max 6 MB.' };
+
+  if (userId) {
+    const user = await getUser(env, userId);
+    if (!user) return { ok: false, error: 'Invalid user. Please sign in again.' };
+  }
+
+  const cat = await createCatFromBlob(env, {
+    blob: file,
+    contentType: file.type || 'image/jpeg',
+    creatorId: userId || null,
+    source: 'upload',
+    type: 'upload',
+    tags,
+    title,
+    caption,
+  });
+
+  return {
+    ok: true,
+    data: rowToCat({
+      ...cat,
+      creator_id: cat.creator_id,
+      image_url: cat.image_url,
+      source_url: cat.source_url,
+      meme_top: '',
+      meme_bottom: '',
+      meme_position: '',
+      views: 0,
+      created_at: new Date().toISOString(),
+      modified_at: new Date().toISOString(),
+    }),
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Ensure external API cat becomes stable R2 cat
+// ═══════════════════════════════════════════════════════════
+
+async function apiEnsureCat(req, env) {
+  if (req.method !== 'POST') return { ok: false, error: 'POST only' };
+
+  try {
+    const body = await req.json().catch(() => ({}));
+    const cat = await ensureStableCat(env, body);
+
+    return {
+      ok: true,
+      data: rowToCat({
+        ...cat,
+        meme_top: cat.meme_top || '',
+        meme_bottom: cat.meme_bottom || '',
+        meme_position: cat.meme_position || '',
+        created_at: cat.created_at || new Date().toISOString(),
+        modified_at: cat.modified_at || new Date().toISOString(),
+      }),
+    };
+  } catch (e) {
+    return {
+      ok: false,
+      error: e.message || 'Could not save cat',
+    };
   }
 }
 
-// Utility: Hash IP for privacy
-async function hashIP(ip) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(ip);
-  const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('').substring(0, 16);
+// ═══════════════════════════════════════════════════════════
+// Like + Save
+// ═══════════════════════════════════════════════════════════
+
+async function apiLike(req, env) {
+  if (req.method !== 'POST') return { ok: false, error: 'POST only' };
+
+  const body = await req.json().catch(() => ({}));
+  const userId = body.userId || '';
+
+  if (!userId) return { ok: false, error: 'Login required' };
+
+  const user = await getUser(env, userId);
+  if (!user) return { ok: false, error: 'Invalid user. Please sign in again.' };
+
+  const cat = await ensureStableCat(env, {
+    ...body,
+    userId,
+  });
+
+  const existingFav = await env.DB.prepare(
+    `SELECT id, status
+     FROM favorites
+     WHERE user_id = ? AND cat_id = ?`
+  ).bind(userId, cat.id).first();
+
+  if (!existingFav) {
+    await env.DB.prepare(
+      `INSERT INTO favorites (id, user_id, cat_id, status)
+       VALUES (?, ?, ?, 'active')`
+    ).bind(crypto.randomUUID(), userId, cat.id).run();
+
+    await env.DB.prepare(
+      `UPDATE cats
+       SET likes = COALESCE(likes, 0) + 1,
+           modified_at = CURRENT_TIMESTAMP
+       WHERE id = ?`
+    ).bind(cat.id).run();
+  } else if (existingFav.status !== 'active') {
+    await env.DB.prepare(
+      `UPDATE favorites
+       SET status = 'active'
+       WHERE user_id = ? AND cat_id = ?`
+    ).bind(userId, cat.id).run();
+
+    await env.DB.prepare(
+      `UPDATE cats
+       SET likes = COALESCE(likes, 0) + 1,
+           modified_at = CURRENT_TIMESTAMP
+       WHERE id = ?`
+    ).bind(cat.id).run();
+  }
+
+  const updated = await env.DB.prepare(
+    `SELECT *
+     FROM cats
+     WHERE id = ?`
+  ).bind(cat.id).first();
+
+  return {
+    ok: true,
+    data: {
+      ...rowToCat(updated),
+      alreadyLiked: !!existingFav && existingFav.status === 'active',
+    },
+  };
+}
+
+async function apiSave(req, env, seg) {
+  if (req.method === 'DELETE') {
+    const favId = seg[2];
+    const url = new URL(req.url);
+    const userId = url.searchParams.get('userId') || '';
+
+    if (!favId || !userId) {
+      return { ok: false, error: 'favorite id and userId required' };
+    }
+
+    const fav = await env.DB.prepare(
+      `SELECT cat_id
+       FROM favorites
+       WHERE id = ? AND user_id = ? AND status = 'active'`
+    ).bind(favId, userId).first();
+
+    if (fav) {
+      await env.DB.prepare(
+        `UPDATE favorites
+         SET status = 'removed'
+         WHERE id = ? AND user_id = ?`
+      ).bind(favId, userId).run();
+
+      await env.DB.prepare(
+        `UPDATE cats
+         SET likes = CASE WHEN likes > 0 THEN likes - 1 ELSE 0 END,
+             modified_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+      ).bind(fav.cat_id).run();
+    }
+
+    return { ok: true };
+  }
+
+  if (req.method !== 'POST') return { ok: false, error: 'POST or DELETE only' };
+
+  const body = await req.json().catch(() => ({}));
+  const userId = body.userId || '';
+
+  if (!userId) return { ok: false, error: 'Login required' };
+
+  const user = await getUser(env, userId);
+  if (!user) return { ok: false, error: 'Invalid user. Please sign in again.' };
+
+  const cat = await ensureStableCat(env, {
+    ...body,
+    userId,
+  });
+
+  const existing = await env.DB.prepare(
+    `SELECT id, status
+     FROM favorites
+     WHERE user_id = ? AND cat_id = ?`
+  ).bind(userId, cat.id).first();
+
+  if (existing) {
+    if (existing.status !== 'active') {
+      await env.DB.prepare(
+        `UPDATE favorites
+         SET status = 'active'
+         WHERE id = ?`
+      ).bind(existing.id).run();
+
+      await env.DB.prepare(
+        `UPDATE cats
+         SET likes = COALESCE(likes, 0) + 1,
+             modified_at = CURRENT_TIMESTAMP
+         WHERE id = ?`
+      ).bind(cat.id).run();
+    }
+
+    const updated = await env.DB.prepare(
+      `SELECT *
+       FROM cats
+       WHERE id = ?`
+    ).bind(cat.id).first();
+
+    return {
+      ok: true,
+      data: {
+        favoriteId: existing.id,
+        ...rowToCat(updated),
+        alreadySaved: existing.status === 'active',
+      },
+    };
+  }
+
+  const favId = crypto.randomUUID();
+
+  await env.DB.prepare(
+    `INSERT INTO favorites (id, user_id, cat_id, status)
+     VALUES (?, ?, ?, 'active')`
+  ).bind(favId, userId, cat.id).run();
+
+  await env.DB.prepare(
+    `UPDATE cats
+     SET likes = COALESCE(likes, 0) + 1,
+         modified_at = CURRENT_TIMESTAMP
+     WHERE id = ?`
+  ).bind(cat.id).run();
+
+  const updated = await env.DB.prepare(
+    `SELECT *
+     FROM cats
+     WHERE id = ?`
+  ).bind(cat.id).first();
+
+  return {
+    ok: true,
+    data: {
+      favoriteId: favId,
+      ...rowToCat(updated),
+    },
+  };
+}
+
+async function apiGetSaves(req, env) {
+  const url = new URL(req.url);
+  const userId = url.searchParams.get('userId') || '';
+
+  if (!userId) {
+    return { ok: true, data: [] };
+  }
+
+  const res = await env.DB.prepare(
+    `SELECT
+       f.id AS favorite_id,
+       f.created_at AS favorite_created_at,
+       c.*
+     FROM favorites f
+     JOIN cats c ON c.id = f.cat_id
+     WHERE f.user_id = ?
+       AND f.status = 'active'
+       AND c.status = 'active'
+     ORDER BY f.created_at DESC`
+  ).bind(userId).all();
+
+  const data = (res.results || []).map(row => ({
+    favoriteId: row.favorite_id,
+    favoriteCreatedAt: row.favorite_created_at,
+    ...rowToCat(row),
+  }));
+
+  return {
+    ok: true,
+    data,
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Meme save
+// ═══════════════════════════════════════════════════════════
+
+async function apiMemeSave(req, env) {
+  if (req.method !== 'POST') return { ok: false, error: 'POST only' };
+
+  const form = await req.formData();
+  const file = form.get('file');
+  const userId = String(form.get('userId') || '');
+  const baseCatId = String(form.get('baseCatId') || '');
+  const tags = String(form.get('tags') || 'meme,funny,cat');
+  const title = String(form.get('title') || 'Fresh cat meme');
+  const caption = String(form.get('caption') || '');
+  const memeTop = String(form.get('memeTop') || '');
+  const memeBottom = String(form.get('memeBottom') || '');
+  const memePosition = String(form.get('memePosition') || 'classic');
+
+  if (!file) return { ok: false, error: 'No meme image provided' };
+  if (!file.type.startsWith('image/')) return { ok: false, error: 'Images only' };
+
+  if (userId) {
+    const user = await getUser(env, userId);
+    if (!user) return { ok: false, error: 'Invalid user. Please sign in again.' };
+  }
+
+  const cat = await createCatFromBlob(env, {
+    blob: file,
+    contentType: file.type || 'image/jpeg',
+    creatorId: userId || null,
+    source: 'meme',
+    type: 'meme',
+    tags,
+    title,
+    caption,
+    memeTop,
+    memeBottom,
+    memePosition,
+  });
+
+  if (userId) {
+    await env.DB.prepare(
+      `INSERT OR IGNORE INTO favorites (id, user_id, cat_id, status)
+       VALUES (?, ?, ?, 'active')`
+    ).bind(crypto.randomUUID(), userId, cat.id).run();
+  }
+
+  return {
+    ok: true,
+    data: {
+      ...cat,
+      baseCatId,
+      url: cat.image_url,
+      imageUrl: cat.image_url,
+    },
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// AI image
+// ═══════════════════════════════════════════════════════════
+
+async function apiAIImage(req, env) {
+  const url = new URL(req.url);
+  const prompt = (url.searchParams.get('prompt') || 'cute cat').slice(0, 300);
+  const full = `cat, ${prompt}`;
+  const imgUrl = `${POLLINATIONS}/${encodeURIComponent(full)}?width=768&height=768&nologo=true&seed=${Date.now()}`;
+
+  return {
+    ok: true,
+    data: {
+      url: imgUrl,
+      prompt,
+    },
+  };
+}
+
+async function apiMemeText(req, env) {
+  const url = new URL(req.url);
+  const tags = url.searchParams.get('tags') || 'cute cat';
+
+  let top = '';
+  let bottom = '';
+
+  try {
+    const ai = await env.AI.run('@cf/meta/llama-3-8b-instruct', {
+      messages: [{
+        role: 'user',
+        content: `Write a funny two-line cat meme caption for a photo tagged: ${tags}.
+Reply ONLY with JSON: {"top":"<top text>","bottom":"<bottom text>"}
+Keep each line under 8 words. All caps. No quotes in the text.`,
+      }],
+      max_tokens: 80,
+    });
+
+    const txt = ai.response || '';
+    const json = JSON.parse(txt.match(/\{[\s\S]*\}/)?.[0] || '{}');
+    top = String(json.top || '').slice(0, 60);
+    bottom = String(json.bottom || '').slice(0, 60);
+  } catch {
+    const fallbacks = [
+      ['ME AT 2AM', 'DEBUGGING ONE CSS BUG'],
+      ['WHEN FOOD OPENS', 'I TELEPORT'],
+      ['I AM NOT LAZY', 'I AM ENERGY EFFICIENT'],
+      ['DESI CAT MODE', 'FULL NAWABI ATTITUDE'],
+    ];
+    const pick = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    top = pick[0];
+    bottom = pick[1];
+  }
+
+  return {
+    ok: true,
+    data: {
+      top,
+      bottom,
+    },
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Captions – pure DB read; lulcat is pre-processed by sync.js
+// ═══════════════════════════════════════════════════════════
+
+async function apiCaptions(req, env) {
+  // Read from the cat_captions table which was populated by:
+  //   node scripts/sync.js captions [--remote]
+  // Both original_text and lul_text are stored there so the
+  // Worker never has to call the popcat API at runtime.
+  const res = await env.DB.prepare(
+    `SELECT original_text, lul_text
+     FROM cat_captions
+     WHERE is_active = 1
+     ORDER BY RANDOM()
+     LIMIT 100`
+  ).all();
+
+  const rows = res.results || [];
+
+  // Send both lists separately so the frontend can choose freely
+  const captions = rows.map(r => r.original_text).filter(Boolean);
+  const lulcats  = rows.map(r => r.lul_text).filter(t => t && t.trim());
+
+  return {
+    ok: true,
+    data: { captions, lulcats },
+  };
+}
+
+// ═══════════════════════════════════════════════════════════
+// Facts + stats
+// ═══════════════════════════════════════════════════════════
+
+async function apiFact(env) {
+  const r = await env.DB.prepare(
+    `SELECT fact
+     FROM cat_facts
+     WHERE is_active = 1
+     ORDER BY RANDOM()
+     LIMIT 1`
+  ).first();
+
+  return {
+    ok: true,
+    data: {
+      fact: r?.fact || 'Cats are liquid 🐱',
+    },
+  };
+}
+
+async function apiStats(env) {
+  const [cats, memes, favs, users] = await Promise.all([
+    env.DB.prepare(`SELECT COUNT(*) n FROM cats WHERE status = 'active'`).first(),
+    env.DB.prepare(`SELECT COUNT(*) n FROM cats WHERE status = 'active' AND type = 'meme'`).first(),
+    env.DB.prepare(`SELECT COUNT(*) n FROM favorites WHERE status = 'active'`).first(),
+    env.DB.prepare(`SELECT COUNT(*) n FROM users`).first(),
+  ]);
+
+  return {
+    ok: true,
+    data: {
+      cats: cats?.n || 0,
+      memes: memes?.n || 0,
+      saves: favs?.n || 0,
+      users: users?.n || 0,
+    },
+  };
 }

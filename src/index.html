@@ -1,872 +1,1549 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PurrfectHub 🐱 - Your Ultimate Cat Paradise</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#F97316" />
+  <title>🐾</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9.144,300.900;1,9.144,300.900&family=Instrument+Sans:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent
+    }
 
-        :root {
-            --primary: #9D84B7;
-            --primary-light: #C4A4E0;
-            --secondary: #FFB347;
-            --secondary-light: #FF8C69;
-            --accent: #A8E6CF;
-            --bg: #FFF9F0;
-            --card-bg: #FFFFFF;
-            --text: #2D3748;
-            --text-light: #718096;
-            --shadow: rgba(157, 132, 183, 0.1);
-            --border-radius: 20px;
-        }
+    button,
+    input,
+    textarea {
+      font: inherit
+    }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, var(--bg) 0%, #FFF5E6 100%);
-            color: var(--text);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
+    button {
+      border: 0;
+      background: none;
+      cursor: pointer
+    }
 
-        h1, h2, h3 {
-            font-family: 'Quicksand', sans-serif;
-            font-weight: 700;
-        }
+    img {
+      display: block;
+      max-width: 100%
+    }
 
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            padding: 0 20px;
-        }
+    :root {
+      --brand: #f97316;
+      --brand-d: #ea580c;
+      --brand-s: #fff0e6;
+      --rose: #f43f5e;
+      --teal: #14b8a6;
+      --gold: #fbbf24;
+      --ink: #1c1410;
+      --ink2: #4b3b30;
+      --ink3: #927b6c;
+      --ink4: #c4b8b0;
+      --bg: #fffbf7;
+      --surf: #fff;
+      --surf2: #f7f1eb;
+      --surf3: #efe7df;
+      --line: #e8ddd4;
+      --r: 14px;
+      --r2: 22px;
+      --shadow: 0 2px 12px rgba(0, 0, 0, .08);
+      --shadow2: 0 12px 40px rgba(0, 0, 0, .14);
+      --nav-h: 64px;
+      --safe-b: env(safe-area-inset-bottom, 0px)
+    }
 
-        /* Header */
-        header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            padding: 1.5rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            box-shadow: 0 4px 20px var(--shadow);
-        }
+    [data-dark] {
+      --bg: #100d0a;
+      --surf: #1a1410;
+      --surf2: #221c16;
+      --surf3: #2c2218;
+      --line: #332820;
+      --ink: #f5ede4;
+      --ink2: #d8c2aa;
+      --ink3: #8c7162;
+      --ink4: #4a3828;
+      --brand-s: rgba(249, 115, 22, .16);
+      --shadow: 0 2px 12px rgba(0, 0, 0, .4);
+      --shadow2: 0 12px 40px rgba(0, 0, 0, .55)
+    }
 
-        .header-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
+    html,
+    body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Instrument Sans", system-ui, sans-serif
+    }
 
-        .logo {
-            font-size: 2rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            cursor: pointer;
-        }
+    #root {
+      max-width: 480px;
+      margin: 0 auto;
+      min-height: 100svh;
+      padding-bottom: calc(var(--nav-h) + var(--safe-b) + 16px)
+    }
 
-        .upload-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
-            border: none;
-            color: white;
-            font-size: 28px;
-            cursor: pointer;
-            box-shadow: 0 4px 20px rgba(255, 179, 71, 0.4);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            z-index: 99;
-        }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255, 251, 247, .86);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between
+    }
 
-        .upload-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 6px 30px rgba(255, 179, 71, 0.6);
-        }
+    [data-dark] .topbar {
+      background: rgba(16, 13, 10, .86)
+    }
 
-        /* Hero Section */
-        .hero {
-            text-align: center;
-            padding: 4rem 0;
-        }
+    .logo {
+      font-family: Fraunces, serif;
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--brand);
+      display: flex;
+      gap: 7px;
+      align-items: center
+    }
 
-        .hero h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
+    .logo span {
+      animation: wag 2.6s infinite ease-in-out;
+      transform-origin: 50% 80%
+    }
 
-        .hero p {
-            font-size: 1.3rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
-        }
+    @keyframes wag {
 
-        /* Cat Display Section */
-        .cat-display {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            box-shadow: 0 10px 40px var(--shadow);
-            min-height: 400px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
+      0%,
+      100% {
+        transform: rotate(-10deg)
+      }
 
-        .cat-image {
-            max-width: 100%;
-            max-height: 500px;
-            border-radius: 16px;
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-            object-fit: contain;
-            transition: transform 0.3s ease;
-        }
+      50% {
+        transform: rotate(10deg)
+      }
+    }
 
-        .cat-image:hover {
-            transform: scale(1.02);
-        }
+    .top-actions {
+      display: flex;
+      gap: 6px;
+      align-items: center
+    }
 
-        .loading {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1rem;
-        }
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      color: var(--ink2)
+    }
 
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--primary-light);
-            border-top: 4px solid var(--primary);
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
+    .icon-btn:hover {
+      background: var(--surf2)
+    }
 
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
+    .icon-btn svg {
+      width: 21px;
+      height: 21px;
+      stroke-width: 1.9
+    }
 
-        /* Navigation Controls - Bottom Center */
-        .generator-nav {
-            display: flex;
-            justify-content: center;
-            margin-top: 0.3em;
-        }
+    .page {
+      padding: 14px
+    }
 
-        .nav-controls {
-            display: flex;
-            gap: 1rem;
-            background: rgba(26, 26, 26, 0.8);
-            backdrop-filter: blur(20px);
-            border-radius: 50px;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-            padding: 10px;
-        }
+    .section-title {
+      font-family: Fraunces, serif;
+      font-size: 23px;
+      font-weight: 900;
+      margin: 6px 0 14px
+    }
 
-        .nav-btn {
-            background: transparent;
-            border: none;
-            color: var(--text-light);
-            font-size: 1.8rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            padding: 0.5rem;
-            border-radius: 50%;
-            width: 30px;
-            height: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
+    .section-sub {
+      font-size: 13px;
+      color: var(--ink3);
+      line-height: 1.55;
+      margin: -8px 0 16px
+    }
 
-        .nav-btn:hover {
-            background: rgba(157, 132, 183, 0.3);
-            color: var(--primary);
-            transform: translateY(-3px);
-        }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 480px;
+      height: calc(var(--nav-h) + var(--safe-b));
+      padding-bottom: var(--safe-b);
+      background: rgba(255, 251, 247, .94);
+      backdrop-filter: blur(20px);
+      border-top: 1px solid var(--line);
+      display: flex;
+      z-index: 60
+    }
 
-        /* Controls */
-        .controls {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
+    [data-dark] .bottom-nav {
+      background: rgba(16, 13, 10, .94)
+    }
 
-        .control-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px var(--shadow);
-        }
+    .nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--ink3);
+      font-size: 10px;
+      font-weight: 700
+    }
 
-        .control-card h3 {
-            font-size: 1.3rem;
-            margin-bottom: 1rem;
-            color: var(--primary);
-        }
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
+      stroke-width: 1.7
+    }
 
-        .btn {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
-            color: white;
-            border: none;
-            padding: 0.8rem 1.5rem;
-            border-radius: 12px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 100%;
-            margin-top: 0.5rem;
-        }
+    .nav-item.active {
+      color: var(--brand)
+    }
 
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--shadow);
-        }
+    .nav-item.active svg {
+      stroke-width: 2.3
+    }
 
-        .btn-secondary {
-            background: linear-gradient(135deg, var(--secondary) 0%, var(--secondary-light) 100%);
-        }
+    .tag-scroll {
+      display: flex;
+      gap: 8px;
+      overflow: auto;
+      padding: 2px 14px 12px;
+      margin: 0 -14px
+    }
 
-        .btn-accent {
-            background: linear-gradient(135deg, var(--accent) 0%, #90D4BA 100%);
-        }
+    .tag-chip {
+      flex: 0 0 auto;
+      border: 1.5px solid var(--line);
+      background: var(--surf);
+      color: var(--ink2);
+      border-radius: 999px;
+      padding: 8px 13px;
+      font-size: 13px;
+      font-weight: 700
+    }
 
-        input[type="text"], select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 2px solid #E2E8F0;
-            border-radius: 12px;
-            font-size: 1rem;
-            margin-top: 0.5rem;
-            transition: border-color 0.3s ease;
-        }
+    .tag-chip.active {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink)
+    }
 
-        input[type="text"]:focus, select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
+    .cat-card {
+      background: var(--surf);
+      border: 1px solid var(--line);
+      border-radius: var(--r2);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      animation: up .35s both
+    }
 
-        .tag-suggestions {
-            position: absolute;
-            background: white;
-            border: 2px solid var(--primary-light);
-            border-radius: 12px;
-            margin-top: 0.5rem;
-            max-height: 200px;
-            overflow-y: auto;
-            width: calc(100% - 3rem);
-            z-index: 10;
-            box-shadow: 0 4px 20px var(--shadow);
-        }
+    @keyframes up {
+      from {
+        opacity: 0;
+        transform: translateY(10px)
+      }
 
-        .tag-suggestion {
-            padding: 0.8rem;
-            cursor: pointer;
-            transition: background 0.2s ease;
-        }
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
 
-        .tag-suggestion:hover {
-            background: var(--primary-light);
-            color: white;
-        }
+    .card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px
+    }
 
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 1rem;
-            margin: 0.5rem 0;
-            border-bottom: 2px solid #E2E8F0;
-        }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--brand-s);
+      font-size: 22px
+    }
 
-        .tab {
-            padding: 0.4rem 1rem 1rem;
-            background: none;
-            border: none;
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--text-light);
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 3px solid transparent;
-        }
+    .card-user {
+      flex: 1
+    }
 
-        .tab.active {
-            color: var(--primary);
-            border-bottom-color: var(--primary);
-        }
+    .name {
+      font-weight: 900;
+      font-size: 14px
+    }
 
-        .tab-content {
-            display: none;
-        }
+    .meta {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-top: 1px
+    }
 
-        .tab-content.active {
-            display: block;
-        }
+    .badge {
+      font-size: 10px;
+      font-weight: 900;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: var(--brand-s);
+      color: var(--brand)
+    }
 
-        .tab-content {
-            position: relative;
-        }
+    .img-wrap {
+      position: relative;
+      background: var(--surf2);
+      aspect-ratio: 1/1;
+      overflow: hidden
+    }
 
-        /* HTTP Cats Grid */
-        .http-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
+    .cat-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
 
-        .http-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 1rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 20px var(--shadow);
-        }
+    .heart-burst {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      font-size: 78px;
+      pointer-events: none;
+      animation: heart .7s both
+    }
 
-        .http-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 8px 30px var(--shadow);
-        }
+    @keyframes heart {
+      0% {
+        opacity: 0;
+        transform: scale(.3)
+      }
 
-        .http-card img {
-            width: 100%;
-            border-radius: 12px;
-            margin-bottom: 0.5rem;
-        }
+      35% {
+        opacity: 1;
+        transform: scale(1.1)
+      }
 
-        .http-code {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
+      100% {
+        opacity: 0;
+        transform: scale(.85)
+      }
+    }
 
-        /* Breed Cards */
-        .breed-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 2rem;
-            margin: 2rem 0;
-        }
+    .card-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 11px 12px
+    }
 
-        .breed-card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            overflow: hidden;
-            box-shadow: 0 4px 20px var(--shadow);
-            transition: transform 0.3s ease;
-        }
+    .action-btn {
+      height: 38px;
+      min-width: 38px;
+      border-radius: 999px;
+      background: var(--surf2);
+      color: var(--ink2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 0 12px;
+      font-size: 13px;
+      font-weight: 800
+    }
 
-        .breed-card:hover {
-            transform: translateY(-5px);
-        }
+    .action-btn svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2;
+      fill: none
+    }
 
-        .breed-card img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
+    .action-btn.liked {
+      color: var(--rose);
+      background: rgba(244, 63, 94, .1)
+    }
 
-        .breed-info {
-            padding: 1.5rem;
-        }
+    .action-btn.saved {
+      color: var(--brand);
+      background: var(--brand-s)
+    }
 
-        .breed-name {
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
+    .ml {
+      margin-left: auto
+    }
 
-        /* Modal */
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 999;
-            align-items: center;
-            justify-content: center;
-        }
+    .pop {
+      animation: pop .35s
+    }
 
-        .modal.active {
-            display: flex;
-        }
+    @keyframes pop {
+      50% {
+        transform: scale(1.18)
+      }
+    }
 
-        .modal-content {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        }
+    .card-caption {
+      padding: 0 14px 14px;
+      font-size: 14px;
+      line-height: 1.45
+    }
 
-        .modal-close {
-            float: right;
-            font-size: 2rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
+    .card-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 9px
+    }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .hero h1 {
-                font-size: 2.5rem;
-            }
+    .tag-pill {
+      font-size: 12px;
+      color: var(--brand);
+      font-weight: 800
+    }
 
-            .controls {
-                grid-template-columns: 1fr;
-            }
+    .inp {
+      width: 100%;
+      border: 1.5px solid var(--line);
+      background: var(--surf2);
+      border-radius: 13px;
+      padding: 11px 13px;
+      color: var(--ink);
+      outline: none
+    }
 
-            .http-grid {
-                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            }
-        }
+    .inp:focus {
+      border-color: var(--brand)
+    }
 
-        /* Animations */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+    textarea.inp {
+      min-height: 88px;
+      resize: vertical
+    }
 
-        .fade-in {
-            animation: fadeIn 0.5s ease;
-        }
+    .form-group {
+      margin-bottom: 14px
+    }
 
-        /* Paw print cursor */
-        .paw-cursor {
-            position: fixed;
-            width: 20px;
-            height: 20px;
-            pointer-events: none;
-            z-index: 9999;
-            opacity: 0.5;
-            transition: opacity 0.3s ease;
-        }
-    </style>
+    .form-label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 900;
+      color: var(--ink3);
+      margin-bottom: 6px
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 11px;
+      color: var(--ink4);
+      margin-top: 3px
+    }
+
+    .btn {
+      border-radius: 13px;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-weight: 900;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px
+    }
+
+    .btn-full {
+      width: 100%
+    }
+
+    .btn-accent {
+      background: var(--brand);
+      color: #fff
+    }
+
+    .btn-accent:hover {
+      background: var(--brand-d)
+    }
+
+    .btn-ghost {
+      background: var(--surf2);
+      color: var(--ink2)
+    }
+
+    .btn-primary {
+      background: var(--ink);
+      color: var(--bg)
+    }
+
+    .btn:disabled {
+      opacity: .55;
+      pointer-events: none
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2.5px solid currentColor;
+      border-top-color: transparent;
+      border-radius: 50%;
+      animation: spin .75s linear infinite
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, .52);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 200
+    }
+
+    .sheet {
+      width: 100%;
+      max-width: 480px;
+      max-height: 94dvh;
+      overflow: auto;
+      background: var(--surf);
+      border-radius: 24px 24px 0 0;
+      padding: 18px 18px calc(18px + var(--safe-b));
+      box-shadow: var(--shadow2);
+      animation: sheet .25s both
+    }
+
+    @keyframes sheet {
+      from {
+        transform: translateY(100%)
+      }
+
+      to {
+        transform: none
+      }
+    }
+
+    .sheet-handle {
+      width: 38px;
+      height: 4px;
+      background: var(--line);
+      border-radius: 99px;
+      margin: 0 auto 18px
+    }
+
+    .auth-hero {
+      text-align: center;
+      margin-bottom: 16px
+    }
+
+    .auth-cat {
+      width: 64px;
+      height: 64px;
+      border-radius: 22px;
+      background: var(--brand-s);
+      display: grid;
+      place-items: center;
+      margin: 0 auto 10px;
+      font-size: 34px
+    }
+
+    .auth-hero h2 {
+      font-family: Fraunces, serif;
+      font-size: 24px
+    }
+
+    .auth-hero p {
+      font-size: 13px;
+      color: var(--ink3);
+      line-height: 1.5;
+      margin-top: 4px
+    }
+
+    .toast-wrap {
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999;
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      pointer-events: none
+    }
+
+    .toast {
+      background: var(--ink);
+      color: var(--bg);
+      border-radius: 999px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      box-shadow: var(--shadow2);
+      animation: toast .25s both
+    }
+
+    .toast.out {
+      animation: toastOut .25s forwards
+    }
+
+    @keyframes toast {
+      from {
+        opacity: 0;
+        transform: translateY(-10px)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes toastOut {
+      to {
+        opacity: 0;
+        transform: translateY(-8px)
+      }
+    }
+
+    .empty {
+      text-align: center;
+      padding: 58px 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px
+    }
+
+    .empty-emoji {
+      font-size: 54px
+    }
+
+    .empty-title {
+      font-family: Fraunces, serif;
+      font-size: 19px;
+      font-weight: 900
+    }
+
+    .empty-sub {
+      font-size: 13px;
+      color: var(--ink3);
+      line-height: 1.55;
+      max-width: 280px
+    }
+
+    .explore-grid {
+      display: grid;
+      gap: 12px
+    }
+
+    .explore-card {
+      background: var(--surf);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      box-shadow: var(--shadow)
+    }
+
+    .explore-head {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .ec-emoji {
+      font-size: 30px
+    }
+
+    .ec-title {
+      font-family: Fraunces, serif;
+      font-size: 17px;
+      font-weight: 900
+    }
+
+    .ec-sub {
+      font-size: 12px;
+      color: var(--ink3);
+      margin-top: 2px
+    }
+
+    .expand {
+      padding-top: 14px
+    }
+
+    .prompt-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px
+    }
+
+    .prompt-chips {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+      margin-bottom: 12px
+    }
+
+    .ai-card {
+      background: var(--surf);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: var(--shadow)
+    }
+
+    .ai-card-img {
+      width: 100%;
+      aspect-ratio: 1/1;
+      object-fit: cover
+    }
+
+    .ai-card-actions {
+      display: flex;
+      gap: 8px;
+      padding: 12px
+    }
+
+    .mood-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px
+    }
+
+    .mood-btn {
+      background: var(--surf2);
+      border: 1px solid var(--line);
+      border-radius: 13px;
+      padding: 10px 4px;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--ink2);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px
+    }
+
+    .mood-btn span {
+      font-size: 22px
+    }
+
+    .upload-zone {
+      border: 2px dashed var(--line);
+      border-radius: 22px;
+      background: var(--surf);
+      padding: 34px 18px;
+      text-align: center
+    }
+
+    .upload-zone.drag {
+      border-color: var(--brand);
+      background: var(--brand-s)
+    }
+
+    .upload-zone input {
+      display: none
+    }
+
+    .upload-preview {
+      position: relative;
+      aspect-ratio: 1/1;
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--surf2);
+      margin-bottom: 14px
+    }
+
+    .upload-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .remove-btn {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, .55);
+      color: #fff
+    }
+
+    .progress-bar {
+      height: 4px;
+      background: var(--surf3);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 14px
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--brand);
+      transition: width .25s
+    }
+
+    .saved-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 3px
+    }
+
+    .saved-thumb {
+      position: relative;
+      aspect-ratio: 1/1;
+      overflow: hidden;
+      background: var(--surf2)
+    }
+
+    .saved-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover
+    }
+
+    .saved-remove {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(0, 0, 0, .6);
+      color: #fff
+    }
+
+    .saved-count {
+      font-size: 12px;
+      font-weight: 900;
+      background: var(--surf2);
+      border-radius: 999px;
+      padding: 4px 10px;
+      color: var(--ink3)
+    }
+
+    .meme-canvas-wrap {
+      border-radius: 18px;
+      overflow: hidden;
+      background: var(--surf2);
+      margin-bottom: 12px
+    }
+
+    .template-scroll {
+      display: flex;
+      gap: 8px;
+      overflow: auto;
+      padding-bottom: 4px
+    }
+
+    .template-chip {
+      flex: 0 0 auto;
+      background: var(--surf2);
+      border-radius: 999px;
+      padding: 8px 11px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--ink2)
+    }
+
+    .font-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--ink3);
+      font-weight: 800
+    }
+
+    .font-row input {
+      flex: 1
+    }
+
+    .meme-actions {
+      display: flex;
+      gap: 8px
+    }
+
+    .divider {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--ink3);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin: 8px 0 10px
+    }
+
+    .info-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px
+    }
+
+    .info-name {
+      font-family: Fraunces, serif;
+      font-size: 19px;
+      font-weight: 900
+    }
+
+    .info-handle {
+      font-size: 13px;
+      color: var(--ink3)
+    }
+
+    .info-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 14px
+    }
+
+    .info-stat {
+      background: var(--surf2);
+      border-radius: 13px;
+      padding: 10px;
+      text-align: center
+    }
+
+    .info-stat-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      color: var(--ink3);
+      font-weight: 900
+    }
+
+    .info-stat-val {
+      font-size: 12px;
+      font-weight: 900;
+      margin-top: 3px
+    }
+
+    .caption-box,
+    .fact-box {
+      background: var(--surf2);
+      border-radius: 15px;
+      padding: 13px;
+      margin-bottom: 13px
+    }
+
+    .caption-label,
+    .fact-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      font-weight: 900;
+      color: var(--ink3);
+      margin-bottom: 6px
+    }
+
+    .caption-text,
+    .fact-text {
+      font-size: 14px;
+      line-height: 1.5
+    }
+  </style>
 </head>
+
 <body>
-    <main class="container">
-        <div class="tabs">
-            <button class="tab active" data-tab="generator">Just Cat</button>
-            <button class="tab" data-tab="http-cats">HTTP Cats</button>
-            <button class="tab" data-tab="breeds">Breeds</button>
-        </div>
+  <div id="root"></div>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    const { useState, useEffect, useRef, useCallback, useMemo, createContext, useContext } = React;
+    const API_BASE = '';
+    const api = async (path, opts = {}) => { try { const r = await fetch(API_BASE + path, opts); return r.ok ? r.json() : { ok: false, error: `HTTP ${r.status}` } } catch { return { ok: false, error: 'Network error' } } };
+    const USER_KEY = 'purrfect_user_v1';
+    function getLocalUser() { try { return JSON.parse(localStorage.getItem(USER_KEY) || 'null') } catch { return null } }
+    function setLocalUser(u) { localStorage.setItem(USER_KEY, JSON.stringify(u)) }
+    function clearLocalUser() { localStorage.removeItem(USER_KEY) }
+    async function compressImageFile(file, maxSize = 1200, quality = .82) { const bitmap = await createImageBitmap(file); const side = Math.min(bitmap.width, bitmap.height); const sx = Math.floor((bitmap.width - side) / 2); const sy = Math.floor((bitmap.height - side) / 2); const c = document.createElement('canvas'); c.width = maxSize; c.height = maxSize; const ctx = c.getContext('2d'); ctx.drawImage(bitmap, sx, sy, side, side, 0, 0, maxSize, maxSize); const blob = await new Promise(res => c.toBlob(res, 'image/jpeg', quality)); return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' }) }
+    const ToastCtx = createContext(() => { });
+    function ToastProvider({ children }) { const [toasts, setToasts] = useState([]); const push = useCallback(msg => { const id = Math.random(); setToasts(p => [...p, { id, msg }]); setTimeout(() => { setToasts(p => p.map(t => t.id === id ? { ...t, out: true } : t)); setTimeout(() => setToasts(p => p.filter(t => t.id !== id)), 260) }, 2400) }, []); return <ToastCtx.Provider value={push}>{children}<div className="toast-wrap">{toasts.map(t => <div key={t.id} className={`toast${t.out ? ' out' : ''}`}>{t.msg}</div>)}</div></ToastCtx.Provider> }
+    const useToast = () => useContext(ToastCtx);
+    const seed_n = (n, m) => Math.abs(Math.sin(n * 999) * 10000 | 0) % m;
+    const FIRSTS = [
+      'Lord', 'Sir', 'Lady', 'Princess', 'Captain', 'Professor', 'Duke', 'Baron', 'Count', 'Duchess', 'Dr.', 'Agent', 'General', 
+      'Nawab', 'Raja', 'Rani', 'Sultan', 'Begum', 'Babu', 'Lala', 'Chotu', 'Motu', 'Golu', 'Guddu', 'Pintu', 'Billi', 'Sheru', 
+      'Maharaja', 'Ustad', 'Mirza', 'Meowuddin', 'Billu', 'Lil', 'McMeow', 'DJ', 'Bro', 'Supreme', 'Didi', 'Bhaiya', 'Don', 'Khalifa', 
+      'Ustad', 'Chonky', 'Certified', 'Guru'
+    ];
 
-        <!-- Cat Generator Tab -->
-        <div id="generator" class="tab-content active">
-            <div class="cat-display" id="catDisplay">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading adorable cat...</p>
-                </div>
+    const MIDDLES = [
+        'Whisker', 'Paw', 'Fluff', 'Biscuit', 'Mochi', 'Churro', 'Noodle', 'Boba', 'Pretzel', 'Waffle', 'Dumpling', 'Taco', 
+        'Chai', 'Gulab', 'Jalebi', 'Ladoo', 'Barfi', 'Samosa', 'Masala', 'Kaju', 'Badam', 'Imli', 'Mithai', 'Rasgulla', 'Puchki', 
+        'Tillu', 'Meow', 'Zoomie', 'Ji', 'Lal', 'Nath', 'Miya', 'Gamer', 'Slayer', 'Rizzy', 'Pawsome', 'Ghee', 'Paneer', 'Biryani', 
+        'Chutney', 'Kulfi', 'Malai', 'Goblin', 'Gremlin', 'Bean'
+    ];
+
+    const PLACES = [
+        'Purnea, Bihar 🌿', 'Somewhere purring 🐾', 'The sofa kingdom 👑', 'A sunny windowsill ☀️', 'Under your bed 🌙', 
+        'On your keyboard ⌨️', 'Delhi balcony 🏙️', 'Mumbai window grill 🌆', 'Kolkata fish market 🐟', 'Bangalore startup desk 💻', 
+        'Hyderabad biryani box 🍗', 'Patna rooftop 🌤️', 'Gurgaon office chair 🪑', 'Jaipur haveli window 🏰',
+        // New relatable internet locations
+        'Inside a cardboard box that is too small 📦',
+        'Living rent-free in your head 🧠',
+        'Goa beach shack (judging tourists) 🏖️',
+        'In the kitchen waiting for the fridge to open 🧊',
+        'Blocking the TV screen during a match 📺',
+        'The exact center of the dining table 🍽️',
+        'Pune cafe pretending to be indie ☕',
+        'Chennai terrace chasing crows 🐦'
+    ];
+
+    const MOODS = [
+        'Plotting world domination 😤', 'Currently judging you 👁️', 'Professionally napping 😴', 'Maximum floof achieved ☁️', 
+        'Deeply unimpressed 🙄', 'Powered by treats 🍗', 'Sending biscuit vibes 🫶', 'Desi drama mode 🎭', 'Waiting for chai time ☕', 
+        'Full nawabi attitude 👑', 'Keyboard QA engineer 💻', 'Silent but suspicious 🕵️',
+        // New Today's Slang & Funny moods
+        'Experiencing orange cat behavior 🍊',
+        'Bombastic side-eye activated 👀',
+        'Serving pure looks and zero attitude adjustments 💅',
+        'In my villain era 🦹',
+        'Staring at a blank wall at 3 AM 👻',
+        'Delulu is the only solulu ✨',
+        'Caught in 4K stealing chicken 🍗',
+        'Experiencing existential Zoomies 🏎️',
+        'Main character energy 🌟',
+        'Gossip aunty mode unlocked 👵'
+    ];
+
+    const CAPTIONS = [
+      'Just woke up and already judging everyone.', 'This is my kingdom. All of it.', 
+      'I have knocked over 3 glasses today and I will knock over more.', 'The sun hits different when you own it.', 
+      'Refusing to explain myself.', 'My agenda for today: nap, eat, stare at wall, repeat.', 
+      'I was not moved by your presentation.', 'CEO of the couch.', 'Plotting, but make it cute.', 
+      'Living my soft life unbothered.', 'This spot is mine. Has always been mine.', 'Technically I am working from home.',
+      'I do not need your validation, I need your treats.', 'No thoughts, just head empty and vibes immaculate.',
+      'I am not saying I hate your music choices, but I am going to scream until you turn it off.',
+      'Look at the material. You cannot replicate this fluff.', 'Another day of being an absolute financial burden.',
+      'I saw a bug. It escaped. This house belongs to the bug now.', 'Fill my bowl. It is half empty and I am starving.',
+      'Heard you talking about "vet". Who is he and why are we visiting him?',
+      'I practice boundary setting by biting your ankle.', 'Bombastic side-eye activated.',
+      'Serving pure looks and zero attitude adjustments.', 'In my villain era.', 'Main character energy.',
+      'Existance is paw-some, but napping is better.', 'Don’t touch the belly. It is a trap.',
+      'I am not fat, I am easy to see.', 'Billi by birth, Nawab by choice.', 'Purnea winters call for extra fluff.',
+      'Currently out of office (under the sofa).',
+      'Professional biscuit maker. 10/10 quality.', 'I don’t meow, I make statements.',
+      'If I fits, I sits. No exceptions.', 'You call it laziness, I call it selective participation.',
+      'My meow is the only alarm clock you need.', 'Staring at the ceiling to scare the humans.',
+      'I am the "cat" in "catastrophe".', 'Legend says I am still waiting for that treat.',
+      'Treats first, questions never.', 'Your bed? You mean my secondary nap station?',
+      'I heard the fridge open from three rooms away.', 'Is it me, or is the red dot mocking me?',
+      'Just me and my 3 AM zoomies.', 'Keeping the floor warm for absolutely no one.',
+      'Sass levels: Critical.', 'I didn’t choose the fluff life, the fluff life chose me.',
+      'I’m not grumpy, I just have a resting cat face.', 'Currently loading... 99% fluff.',
+      'A day without a nap is a day wasted.'
+  ];
+    function catName(s) { return `${FIRSTS[seed_n(s, FIRSTS.length)]} ${MIDDLES[seed_n(s + 3, MIDDLES.length)]}` }
+    function catHandle(n) { return '@' + n.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') }
+    function catPlace(s) { return PLACES[seed_n(s + 2, PLACES.length)] } function catMood(s) { return MOODS[seed_n(s + 5, MOODS.length)] }
+    function CatAvatar({ seed, size = 50 }) {
+        // Array of different cat emojis / expressions
+        const CAT_TYPES = ['🐱', '🐈', '😹', '😻', '😼', '😽', '😾', '🦁', '🐯'];
+
+        // Array of props/hats/vibes that sit behind or next to the cat
+        const ACCESSORIES = ['👑', '👓', '🕶️', '🎀', '🎓', '🎩', '🍕', '🐟', '💻', '✨', '🔥', '🌸'];
+
+        // Aesthetic pastel backgrounds
+        const BACKGROUNDS = [
+          '#FFADAD', '#FFD6A5', '#FDFFB6', '#CAFFBF',
+          '#9BF6FF', '#A0C4FF', '#BDB2FF', '#FFC6FF', '#E2ECE9'
+        ];
+
+        // Simple deterministic hash based on seed string or number
+        const getIndex = (str, mod) => {
+          let hash = 0;
+          const s = String(str);
+          for (let i = 0; i < s.length; i++) {
+            hash = s.charCodeAt(i) + ((hash << 5) - hash);
+          }
+          return Math.abs(hash) % mod;
+        };
+
+        const cat = CAT_TYPES[getIndex(seed, CAT_TYPES.length)];
+        const accessory = ACCESSORIES[getIndex(seed + 'prop', ACCESSORIES.length)];
+        const bgColor = BACKGROUNDS[getIndex(seed + 'bg', BACKGROUNDS.length)];
+
+        return (
+          <div
+            className="cat-profile-avatar"
+            style={{
+              width: size,
+              height: size,
+              backgroundColor: bgColor,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              fontSize: `${size * 0.5}px`,
+              boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
+              userSelect: 'none'
+            }}
+          >
+            {/* The Main Cat */}
+            <span>{cat}</span>
+          </div>
+        );
+      }
+    function AuthModal({ onClose, onDone }) { const toast = useToast(); const [username, setUsername] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const submit = async () => { const u = username.trim(), p = password.trim(); if (!u || !p) return toast('Enter username and password 🐾'); setBusy(true); const r = await api('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) }); setBusy(false); if (!r.ok) return toast(r.error || 'Could not sign in'); setLocalUser(r.data); toast(`Welcome, ${r.data.username} 🐱`); onDone?.(r.data); onClose() }; return <div className="overlay" onClick={onClose}><div className="sheet" onClick={e => e.stopPropagation()}><div className="sheet-handle" /><div className="auth-hero"><div className="auth-cat">🐱</div><h2>Tiny Cat Login</h2><p>Pick a username and password. Existing user signs in, new user gets created.</p></div><div className="form-group"><label className="form-label">Username</label><input className="inp" value={username} onChange={e => setUsername(e.target.value)} placeholder="e.g. faizcat" autoFocus /></div><div className="form-group"><label className="form-label">Password</label><input className="inp" value={password} onChange={e => setPassword(e.target.value)} placeholder="simple password" type="password" /></div><button className="btn btn-accent btn-full" onClick={submit} disabled={busy}>{busy ? <><span className="spinner" /> Signing in…</> : 'Signin / Signup'}</button></div></div> }
+    function CatCard({ index, catId, imageUrl, tags = [], initialLikes = 0, source = 'cataas', type = 'cat', stable = false, creatorNote = '', onMemeClick, onShowInfo, onToast, onFeedUpdate }) { const [liked, setLiked] = useState(false), [saved, setSaved] = useState(false), [lc, setLc] = useState(initialLikes || 0), [loaded, setLoaded] = useState(false), [heart, setHeart] = useState(false), [authOpen, setAuthOpen] = useState(false), [memeUploading, setMemeUploading] = useState(false); const [currentCatId, setCurrentCatId] = useState(catId), [currentUrl, setCurrentUrl] = useState(imageUrl), [currentStable, setCurrentStable] = useState(stable); const pending = useRef(null), btnRef = useRef(null), imgElRef = useRef(null); const s = index + (currentCatId ? String(currentCatId).charCodeAt(0) : 0); const name = useMemo(() => catName(s), [s]); const handle = useMemo(() => catHandle(name), [name]); const location = useMemo(() => catPlace(s), [s]); const mood = useMemo(() => catMood(s), [s]); const captionsPool = useCaptions(); const caption = creatorNote || captionsPool[seed_n(s + index * 17, captionsPool.length)];
+      /* Stabilise a live/cataas cat by reading pixels from the already-rendered <img> element
+         via an offscreen canvas — zero extra network requests, always the exact same image. */
+      const stabiliseCat = useCallback(async () => {
+        if (currentStable) return { id: currentCatId, imageUrl: currentUrl, tags, source, type, stable: true };
+        try {
+          const imgEl = imgElRef.current;
+          if (!imgEl || !imgEl.complete || !imgEl.naturalWidth) throw new Error('img not ready');
+          // Draw the already-decoded image into an offscreen canvas and pull it as a blob
+          const oc = document.createElement('canvas');
+          oc.width = imgEl.naturalWidth;
+          oc.height = imgEl.naturalHeight;
+          oc.getContext('2d').drawImage(imgEl, 0, 0);
+          const blob = await new Promise((res, rej) => oc.toBlob(b => b ? res(b) : rej(new Error('toBlob failed')), 'image/jpeg', 0.92));
+          const fd = new FormData();
+          fd.append('file', blob, `cat-${Date.now()}.jpg`);
+          fd.append('tags', tags.join(',') || 'cat');
+          fd.append('title', 'Cat');
+          fd.append('caption', caption);
+          const r = await api('/api/upload', { method: 'POST', body: fd });
+          if (!r.ok) throw new Error(r.error || 'upload failed');
+          const stableCat = r.data;
+          setCurrentCatId(stableCat.id); setCurrentUrl(stableCat.imageUrl || stableCat.url); setCurrentStable(true);
+          onFeedUpdate?.(index, stableCat);
+          return stableCat;
+        } catch { return { id: currentCatId, imageUrl: currentUrl, tags, source, type, stable: false }; }
+      }, [currentStable, currentCatId, currentUrl, tags, source, type, caption, index, onFeedUpdate]);
+      const requireUser = useCallback(action => { const u = getLocalUser(); if (u?.id) return u; pending.current = action; setAuthOpen(true); return null }, []); const payload = u => ({ userId: u.id, catId: currentCatId, catUrl: currentUrl, tags, source, type, caption }); const handleLike = useCallback(async () => { if (liked) return; const u = requireUser('like'); if (!u) return; setLiked(true); setHeart(true); setLc(c => c + 1); setTimeout(() => setHeart(false), 700); btnRef.current?.classList.add('pop'); setTimeout(() => btnRef.current?.classList.remove('pop'), 350); const r = await api('/api/like', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload(u)) }); if (!r.ok) { setLiked(false); setLc(c => Math.max(0, c - 1)); return onToast?.(r.error || 'Could not like') } setCurrentCatId(r.data.id); setCurrentUrl(r.data.imageUrl || r.data.url); setCurrentStable(true); onFeedUpdate?.(index, r.data); setLc(r.data.likes || 1) }, [liked, requireUser, currentCatId, currentUrl, tags, source, type, caption]); const handleSave = useCallback(async () => { const u = requireUser('save'); if (!u) return; if (saved) return onToast?.('Already saved 🔖'); setSaved(true); const r = await api('/api/save', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload(u)) }); if (!r.ok) { setSaved(false); return onToast?.(r.error || 'Could not save') } setCurrentCatId(r.data.id); setCurrentUrl(r.data.imageUrl || r.data.url); setCurrentStable(true); onFeedUpdate?.(index, r.data); setLc(r.data.likes || lc); onToast?.(r.data.alreadySaved ? 'Already saved 🔖' : 'Saved! 🔖') }, [saved, requireUser, currentCatId, currentUrl, tags, source, type, caption, lc]);
+      const handleMeme = useCallback(async () => {
+        if (memeUploading) return;
+        setMemeUploading(true);
+        const stableCat = await stabiliseCat();
+        setMemeUploading(false);
+        onMemeClick?.({ catId: stableCat.id, imageUrl: stableCat.imageUrl || stableCat.url, tags, source: stableCat.source || source, type: stableCat.type || type, stable: stableCat.stable });
+      }, [memeUploading, stabiliseCat, tags, source, type, onMemeClick]);
+      const infoData = { seed: s, id: currentCatId, name, handle, location, mood, caption, tags, imageUrl: currentUrl, source, type, stable: currentStable }; return <article className="cat-card" style={{ animationDelay: `${Math.min(index * .04, .32)}s` }}><div className="card-header"><button style={{ all: 'unset', display: 'flex', gap: 10, alignItems: 'center', flex: 1, cursor: 'pointer' }} onClick={() => onShowInfo?.(infoData)}><CatAvatar seed={s} /><div className="card-user"><div className="name">{name}</div><div className="meta">{handle} · {location}</div></div></button>{!currentStable && <span className="badge">LIVE</span>}{type === 'meme' && <span className="badge">MEME</span>}</div><div className="img-wrap" onDoubleClick={handleLike}>{!loaded && <div className="empty" style={{ padding: 0, height: '100%', justifyContent: 'center' }}><span className="spinner" /></div>}<img ref={imgElRef} className="cat-img" src={currentUrl} alt="A cat" loading="lazy" onLoad={() => setLoaded(true)} crossOrigin="anonymous" />{heart && <div className="heart-burst">❤️</div>}</div><div className="card-actions"><button ref={btnRef} className={`action-btn${liked ? ' liked' : ''}`} onClick={handleLike}>❤️ {lc.toLocaleString()}</button><button className="action-btn" onClick={handleMeme} disabled={memeUploading}>{memeUploading ? <span className="spinner" style={{width:16,height:16}} /> : '😹'} Meme</button><button className="action-btn" onClick={() => onShowInfo?.(infoData)}>ⓘ</button><button className={`action-btn ml${saved ? ' saved' : ''}`} onClick={handleSave}>🔖</button></div><div className="card-caption">{caption}{tags.length > 0 && <div className="card-tags">{tags.slice(0, 5).map(t => <span key={t} className="tag-pill">#{t}</span>)}</div>}</div>{authOpen && <AuthModal onClose={() => setAuthOpen(false)} onDone={() => { const a = pending.current; pending.current = null; setTimeout(() => { if (a === 'like') handleLike(); if (a === 'save') handleSave() }, 60) }} />}</article> }
+    const FEED_TAGS = ['All', 'cute', 'funny', 'sleeping', 'kitten', 'fluffy', 'grumpy', 'black', 'white', 'orange', 'playful', 'chonky', 'loaf', 'tabby', 'derp', 'desi', 'billi', 'nawab'];
+    function FeedPage({ onMemeClick, onShowInfo }) { const toast = useToast(); const [tag, setTag] = useState('All'), [items, setItems] = useState([]), [loading, setLoading] = useState(false); const sent = useRef(null); const captionsPool = useCaptions(); const loadMore = useCallback(async () => { if (loading) return; setLoading(true); const qs = new URLSearchParams({ limit: '8' }); if (tag && tag !== 'All') qs.set('tag', tag); const r = await api(`/api/feed?${qs}`); if (r.ok) setItems(p => { const base = p.length; return [...p, ...(r.data || []).map((x, i) => ({ id: x.id, catId: x.id, url: x.imageUrl || x.url, tags: x.tags || [], index: base + i, source: x.source || 'cataas', type: x.type || 'cat', likes: x.likes || 0, stable: !!x.stable, caption: x.caption || captionsPool[seed_n((base + i) * 17, captionsPool.length)] || '' }))] }); else toast(r.error || 'Could not load cats'); setLoading(false) }, [loading, tag, toast, captionsPool]); const handleFeedUpdate = useCallback((index, stableCat) => { setItems(prev => prev.map(item => item.index === index ? { ...item, id: stableCat.id, catId: stableCat.id, url: stableCat.imageUrl || stableCat.url, stable: true } : item)) }, []); useEffect(() => { setItems([]); sent.current = null }, [tag]); useEffect(() => { if (!items.length && !loading) loadMore() }, [items.length, loading, loadMore]); useEffect(() => { const el = sent.current; if (!el) return; const io = new IntersectionObserver(e => { if (e[0].isIntersecting) loadMore() }, { rootMargin: '600px' }); io.observe(el); return () => io.disconnect() }, [loadMore, items.length]); return <div className="page"><div className="tag-scroll">{FEED_TAGS.map(t => <button key={t} className={`tag-chip${tag === t ? ' active' : ''}`} onClick={() => setTag(t)}>{t}</button>)}</div>{items.map(item => <CatCard key={`${item.id}-${item.index}`} index={item.index} catId={item.catId} imageUrl={item.url} tags={item.tags} source={item.source} type={item.type} stable={item.stable} initialLikes={item.likes} creatorNote={item.caption} onMemeClick={onMemeClick} onShowInfo={onShowInfo} onToast={toast} onFeedUpdate={handleFeedUpdate} />)}<div ref={sent} className="empty" style={{ padding: 24 }}>{loading ? <><span className="spinner" /><div className="empty-sub">Loading more cats…</div></> : <button className="btn btn-ghost" onClick={loadMore}>Load more cats</button>}</div></div> }
+    function ExplorePage({ onMemeClick, onShowInfo }) { const toast = useToast(); const [open, setOpen] = useState('meme'); return <div className="page"><div className="section-title">Explore</div><div className="section-sub">Meme generator, AI cat studio, mood cats, and desi cat names.</div><div className="explore-grid">{[['mood', '🎭', 'Mood Matcher', 'Pick a vibe and get a matching cat'], ['ai', '✨', 'Cat Image Studio', 'Describe a cat and generate a fresh image'], ['meme', '😹', 'Meme Generator', 'Add text, choose placement, save to gallery'], ['name', '🏷️', 'Cat Name Mixer', 'Generate funny desi cat names']].map(s => <div className="explore-card" key={s[0]}><button className="explore-head" style={{ width: '100%', textAlign: 'left' }} onClick={() => setOpen(open === s[0] ? '' : s[0])}><div className="ec-emoji">{s[1]}</div><div style={{ flex: 1 }}><div className="ec-title">{s[2]}</div><div className="ec-sub">{s[3]}</div></div><b>{open === s[0] ? '−' : '+'}</b></button>{open === s[0] && <div className="expand">{s[0] === 'mood' && <MoodBox onMemeClick={onMemeClick} onShowInfo={onShowInfo} />} {s[0] === 'ai' && <AIBox onMemeClick={onMemeClick} toast={toast} />} {s[0] === 'meme' && <MemeStarter onMemeClick={onMemeClick} />} {s[0] === 'name' && <NameBox />}</div>}</div>)}</div></div> }
+    function MoodBox({ onMemeClick, onShowInfo }) {
+      const toast = useToast();
+      const [busy, setBusy] = useState(null);
+      const moods = [['cute', '🥰'], ['funny', '😂'], ['sleeping', '😴'], ['grumpy', '😾'], ['orange', '🧡'], ['fluffy', '☁️'], ['chonky', '🍞'], ['desi', '🇮🇳']];
+      const openMeme = async (m) => {
+        if (busy) return;
+        setBusy(m);
+        const catUrl = `https://cataas.com/cat/${m}?v=${Date.now()}-${Math.random()}`;
+        try {
+          const res = await fetch(catUrl, { mode: 'cors' });
+          const blob = await res.blob();
+          const fd = new FormData();
+          fd.append('file', blob, `cat-${m}-${Date.now()}.jpg`);
+          fd.append('tags', m + ',cat');
+          fd.append('title', 'Cat');
+          const r = await api('/api/upload', { method: 'POST', body: fd });
+          if (r.ok) {
+            onMemeClick({ catId: r.data.id, imageUrl: r.data.imageUrl || r.data.url, tags: [m], source: 'cataas', type: 'cat', stable: true });
+          } else {
+            toast('Could not load cat 😿');
+          }
+        } catch { toast('Could not load cat 😿'); }
+        setBusy(null);
+      };
+      return <div className="mood-grid">{moods.map(([m, e]) => <button className="mood-btn" key={m} onClick={() => openMeme(m)} disabled={!!busy}>{busy === m ? <span className="spinner" style={{width:20,height:20}} /> : <span>{e}</span>}{m}</button>)}</div>;
+    }
+    function AIBox({ onMemeClick, toast }) {
+      const [prompt, setPrompt] = useState('royal desi cat wearing sunglasses'), [busy, setBusy] = useState(false), [memeLoading, setMemeLoading] = useState(false), [img, setImg] = useState(''), [stableCat, setStableCat] = useState(null);
+      const gen = async () => {
+        setBusy(true);
+        const r = await api(`/api/ai-image?prompt=${encodeURIComponent(prompt)}`);
+        setBusy(false);
+        if (r.ok) { setImg(r.data.url); setStableCat(null); } else toast(r.error || 'Could not generate');
+      };
+      const openMeme = async () => {
+        if (memeLoading) return;
+        if (stableCat) { onMemeClick(stableCat); return; }
+        setMemeLoading(true);
+        try {
+          const res = await fetch(img, { mode: 'cors' });
+          const blob = await res.blob();
+          const fd = new FormData();
+          fd.append('file', blob, `ai-cat-${Date.now()}.jpg`);
+          fd.append('tags', 'generated,cat,ai');
+          fd.append('title', 'AI cat');
+          const r = await api('/api/upload', { method: 'POST', body: fd });
+          if (r.ok) {
+            const cat = { catId: r.data.id, imageUrl: r.data.imageUrl || r.data.url, tags: ['generated', 'cat'], source: 'pollinations', type: 'generated', stable: true };
+            setStableCat(cat);
+            onMemeClick(cat);
+          } else toast(r.error || 'Could not upload');
+        } catch { toast('Could not upload image 😿'); }
+        setMemeLoading(false);
+      };
+      return <div><div className="prompt-row"><input className="inp" value={prompt} onChange={e => setPrompt(e.target.value)} /><button className="btn btn-accent" onClick={gen} disabled={busy}>{busy ? <span className="spinner" /> : 'Go'}</button></div>{img && <div className="ai-card"><img className="ai-card-img" src={img} /><div className="ai-card-actions"><button className="btn btn-accent" onClick={openMeme} disabled={memeLoading}>{memeLoading ? <><span className="spinner" /> Uploading…</> : 'Make Meme'}</button></div></div>}</div>;
+    }
+    function MemeStarter({ onMemeClick }) {
+      const toast = useToast();
+      const [url, setUrl] = useState(`https://cataas.com/cat/funny?v=${Date.now()}`);
+      const [busy, setBusy] = useState(false);
+      const open = async () => {
+        if (busy) return;
+        setBusy(true);
+        try {
+          const res = await fetch(url, { mode: 'cors' });
+          const blob = await res.blob();
+          const fd = new FormData();
+          fd.append('file', blob, `cat-custom-${Date.now()}.jpg`);
+          fd.append('tags', 'meme,cat');
+          fd.append('title', 'Cat');
+          const r = await api('/api/upload', { method: 'POST', body: fd });
+          if (r.ok) {
+            onMemeClick({ catId: r.data.id, imageUrl: r.data.imageUrl || r.data.url, tags: ['meme', 'cat'], source: 'external', type: 'cat', stable: true });
+          } else toast(r.error || 'Could not upload image');
+        } catch { toast('Could not load image from that URL 😿'); }
+        setBusy(false);
+      };
+      return <div><input className="inp" value={url} onChange={e => setUrl(e.target.value)} placeholder="Paste cat image URL" /><button className="btn btn-accent btn-full" style={{ marginTop: 10 }} onClick={open} disabled={busy}>{busy ? <><span className="spinner" /> Uploading…</> : 'Open Meme Studio'}</button></div>;
+    }
+    function NameBox() { const [n, setN] = useState(7); return <div><div className="empty" style={{ padding: 18 }}><div className="empty-title">{catName(n)}</div><div className="empty-sub">{catMood(n)} · {catPlace(n)}</div></div><button className="btn btn-accent btn-full" onClick={() => setN(Math.floor(Math.random() * 99999))}>Generate another</button></div> }
+    const MEME_TEMPLATES = [{ top: 'WHEN YOU SIT ON THE KEYBOARD', bottom: 'AND DELETE PROD DATABASE' }, { top: 'ME AT 2AM', bottom: 'KNOCKING THINGS OFF TABLES' }, { top: 'NOBODY:', bottom: 'ME: INTENSE STARING' }, { top: 'DESI CAT MODE', bottom: 'FULL NAWABI ATTITUDE' }, { top: 'WHEN FOOD OPENS', bottom: 'I TELEPORT' }];
+    function MemeModal({ cat, onClose, onToast }) {
+      // cat is guaranteed stable (uploaded to R2) before this modal opens
+      const imageUrl = cat?.imageUrl || cat?.url;
+      const canvasRef = useRef(null);
+      const imgRef = useRef(null);
+      const [top, setTop] = useState(''), [bot, setBot] = useState('');
+      // fs is a % of canvas width (0–15), maps to a readable range; default 7%
+      const [fsPercent, setFsPercent] = useState(7);
+      const [position, setPosition] = useState('classic');
+      const [saving, setSaving] = useState(false), [aiLoading, setAiLoading] = useState(false);
+      const [imgReady, setImgReady] = useState(false);
+
+      // Load image once; keep natural dimensions
+      useEffect(() => {
+        if (!imageUrl) return;
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => { imgRef.current = img; setImgReady(true); };
+        img.onerror = () => onToast?.('Could not load image for meme 😿');
+        img.src = imageUrl;
+      }, [imageUrl]);
+
+      const draw = useCallback(() => {
+        const c = canvasRef.current;
+        const img = imgRef.current;
+        if (!c || !img) return;
+        const ctx = c.getContext('2d');
+
+        // Use natural image dimensions exactly — no distortion
+        const W = img.naturalWidth || 800;
+        const H = img.naturalHeight || 800;
+        c.width = W;
+        c.height = H;
+        ctx.drawImage(img, 0, 0, W, H);
+
+        // Font size relative to canvas width so it scales with any image
+        const fontSize = Math.max(20, Math.round(W * (fsPercent / 100)));
+        const pad = Math.round(fontSize * 0.6);
+
+        const dt = (txt, x, y, base = 'middle') => {
+          if (!txt) return;
+          const upper = txt.toUpperCase();
+          ctx.font = `900 ${fontSize}px Impact,'Arial Black',sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = base;
+          ctx.lineWidth = Math.max(3, fontSize * 0.12);
+          ctx.lineJoin = 'round';
+          ctx.strokeStyle = '#000';
+          ctx.strokeText(upper, x, y);
+          ctx.fillStyle = '#fff';
+          ctx.fillText(upper, x, y);
+        };
+
+        const cx = W / 2;
+        if (position === 'classic') {
+          dt(top, cx, pad, 'top');
+          dt(bot, cx, H - pad, 'bottom');
+        } else if (position === 'top') {
+          dt(top || bot, cx, pad, 'top');
+        } else if (position === 'center') {
+          dt(top || bot, cx, H / 2, 'middle');
+        } else if (position === 'bottom') {
+          dt(top || bot, cx, H - pad, 'bottom');
+        }
+      }, [imgReady, top, bot, fsPercent, position]);
+
+      useEffect(() => { if (imgReady) draw(); }, [draw, imgReady]);
+
+      const aiSuggest = async () => {
+        setAiLoading(true);
+        const r = await api(`/api/meme-text?tags=${encodeURIComponent((cat?.tags || ['funny', 'cat']).join(' '))}`);
+        if (r.ok) { setTop(r.data.top); setBot(r.data.bottom); } else onToast?.('AI is napping 😴');
+        setAiLoading(false);
+      };
+
+      const download = () => {
+        const c = canvasRef.current;
+        if (!c) return;
+        c.toBlob(b => {
+          const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(b), download: `purrfect-meme-${Date.now()}.jpg` });
+          a.click();
+        }, 'image/jpeg', 0.92);
+      };
+
+      const saveMemeToDb = () => {
+        const c = canvasRef.current;
+        if (!c) return;
+        setSaving(true);
+        c.toBlob(async blob => {
+          const u = getLocalUser();
+          const fd = new FormData();
+          fd.append('file', blob, `purrfect-meme-${Date.now()}.jpg`);
+          fd.append('userId', u?.id || '');
+          fd.append('baseCatId', cat?.catId || cat?.id || '');
+          fd.append('tags', [...(cat?.tags || []), 'meme', 'funny'].join(','));
+          fd.append('title', 'Cat meme');
+          fd.append('caption', `${top} ${bot}`.trim());
+          fd.append('memeTop', top);
+          fd.append('memeBottom', bot);
+          fd.append('memePosition', position);
+          const r = await api('/api/meme-save', { method: 'POST', body: fd });
+          setSaving(false);
+          if (!r.ok) return onToast?.(r.error || 'Could not save meme');
+          onToast?.('Meme added to public gallery 😹');
+          onClose();
+        }, 'image/jpeg', 0.92);
+      };
+
+      const fsPx = Math.round((canvasRef.current?.width || 800) * (fsPercent / 100));
+
+      return (
+        <div className="overlay" onClick={onClose}>
+          <div className="sheet" onClick={e => e.stopPropagation()}>
+            <div className="sheet-handle" />
+            <h2 className="section-title" style={{ marginTop: 0 }}>Meme Studio 🎨</h2>
+            <div className="meme-canvas-wrap">
+              {!imgReady && <div className="empty" style={{ height: 200 }}><span className="spinner" /><div className="empty-sub">Loading image…</div></div>}
+              <canvas ref={canvasRef} style={{ width: '100%', height: 'auto', display: imgReady ? 'block' : 'none', borderRadius: 12 }} />
             </div>
-            <div class="generator-nav">
-                <div class="nav-controls">
-                    <button class="nav-btn" onclick="loadRandomCat()" title="Random Cat">🎲</button>
-                    <button class="nav-btn" onclick="loadRandomGif()" title="Cat GIF">🎬</button>
-                    <button class="nav-btn" title="Download">⬇️</button>
-                </div>
+            <div className="divider">Quick templates</div>
+            <div className="template-scroll">{MEME_TEMPLATES.map((t, i) => <button key={i} className="template-chip" onClick={() => { setTop(t.top); setBot(t.bottom); }}>{t.top.slice(0, 22)}…</button>)}</div>
+            <div className="divider">Text placement</div>
+            <div className="prompt-chips">{[['classic', 'Top + Bottom'], ['top', 'Top'], ['center', 'Center'], ['bottom', 'Bottom']].map(([id, l]) => <button key={id} className={`tag-chip${position === id ? ' active' : ''}`} onClick={() => setPosition(id)}>{l}</button>)}</div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+              <input className="inp" placeholder="Top text" value={top} onChange={e => setTop(e.target.value)} />
+              <input className="inp" placeholder="Bottom text" value={bot} onChange={e => setBot(e.target.value)} />
+              <div className="font-row">
+                <label>Size: ~{fsPx}px ({fsPercent}%)</label>
+                <input type="range" min="3" max="15" value={fsPercent} onChange={e => setFsPercent(+e.target.value)} />
+              </div>
             </div>
-
-            <!-- <div class="controls">
-                <div class="control-card">
-                    <h3>🎲 Random Cat</h3>
-                    <button class="btn" onclick="loadRandomCat()">Get Random Cat</button>
-                    <button class="btn btn-secondary" onclick="loadRandomGif()">Get Cat GIF</button>
-                </div>
-
-                <div class="control-card">
-                    <h3>✏️ Add Text</h3>
-                    <input type="text" id="catText" placeholder="Enter text for your cat...">
-                    <button class="btn btn-accent" onclick="loadCatWithText()">Generate Cat Meme</button>
-                </div>
-
-                <div class="control-card" style="position: relative;">
-                    <h3>🏷️ Filter by Tag</h3>
-                    <input type="text" id="tagInput" placeholder="Search tags..." oninput="searchTags()">
-                    <div id="tagSuggestions" class="tag-suggestions" style="display: none;"></div>
-                    <button class="btn" onclick="loadCatByTag()">Find Cat by Tag</button>
-                </div>
-
-                <div class="control-card">
-                    <h3>😊 How are you feeling?</h3>
-                    <select id="moodSelect" onchange="loadCatByMood()">
-                        <option value="happy">😊 Happy</option>
-                        <option value="sad">😢 Sad</option>
-                        <option value="angry">😠 Angry</option>
-                        <option value="curious">🤔 Curious</option>
-                        <option value="sleepy">😴 Sleepy</option>
-                        <option value="excited">🤩 Excited</option>
-                    </select>
-                </div>
+            <button className="btn btn-ghost btn-full" style={{ marginBottom: 10 }} onClick={aiSuggest} disabled={aiLoading}>{aiLoading ? <><span className="spinner" /> Asking AI…</> : '✨ Suggest with AI'}</button>
+            <div className="meme-actions">
+              <button className="btn btn-accent" style={{ flex: 2 }} onClick={saveMemeToDb} disabled={saving || !imgReady}>{saving ? <><span className="spinner" /> Saving…</> : 'Save to Meme Gallery'}</button>
+              <button className="btn btn-ghost" style={{ flex: 1 }} onClick={download} disabled={!imgReady}>Download</button>
             </div>
-
-            <div style="text-align: center; margin: 2rem 0;">
-                <h3 style="margin-bottom: 1rem;">💡 Cat Fact of the Moment</h3>
-                <p id="catFact" style="font-size: 1.1rem; color: var(--text-light); max-width: 800px; margin: 0 auto;"></p>
-            </div> -->
+          </div>
         </div>
+      );
+    }
+    function MemeModalWithToast({ cat, onClose }) { const toast = useToast(); return <MemeModal cat={cat} onClose={onClose} onToast={toast} /> }
+    function UploadPage() { const toast = useToast(); const [file, setFile] = useState(null), [preview, setPreview] = useState(null), [tags, setTags] = useState(''), [note, setNote] = useState(''), [uploading, setUploading] = useState(false), [progress, setProgress] = useState(0), [drag, setDrag] = useState(false), [authOpen, setAuthOpen] = useState(false); const inputRef = useRef(null); const pick = f => { if (!f) return; if (!f.type.startsWith('image/')) return toast('Images only'); setFile(f); setPreview(URL.createObjectURL(f)) }; const submit = async () => { const u = getLocalUser(); if (!u?.id) { setAuthOpen(true); return } if (!file) return toast('Choose an image'); setUploading(true); setProgress(25); const compressed = await compressImageFile(file, 1200, .82); setProgress(60); const fd = new FormData(); fd.append('file', compressed); fd.append('userId', u.id); fd.append('tags', tags); fd.append('title', 'Community cat'); fd.append('caption', note); const r = await api('/api/upload', { method: 'POST', body: fd }); setProgress(100); setUploading(false); if (!r.ok) return toast(r.error || 'Upload failed'); toast('Uploaded to feed 🐾'); setFile(null); setPreview(null); setTags(''); setNote(''); setProgress(0) }; return <div className="page"><div className="section-title">Upload Cat</div><div className="section-sub">Uploads are compressed in browser and saved directly into the cats table.</div>{uploading && <div className="progress-bar"><div className="progress-fill" style={{ width: progress + '%' }} /></div>}{preview ? <div className="upload-preview"><img src={preview} /><button className="remove-btn" onClick={() => { setFile(null); setPreview(null) }}>×</button></div> : <div className={`upload-zone${drag ? ' drag' : ''}`} onClick={() => inputRef.current?.click()} onDragOver={e => { e.preventDefault(); setDrag(true) }} onDragLeave={() => setDrag(false)} onDrop={e => { e.preventDefault(); setDrag(false); pick(e.dataTransfer.files?.[0]) }}><input ref={inputRef} type="file" accept="image/*" onChange={e => pick(e.target.files?.[0])} /><div className="empty-emoji">📸</div><div className="empty-title">Drop a cat image</div><div className="empty-sub">or tap to choose from device</div></div>}<div style={{ marginTop: 18 }}><div className="form-group"><label className="form-label">Tags</label><input className="inp" placeholder="cute, fluffy, orange" value={tags} onChange={e => setTags(e.target.value.slice(0, 200))} /><div className="char-count">{tags.length}/200</div></div><div className="form-group"><label className="form-label">Story / Context</label><textarea className="inp" placeholder="Why is it funny?" value={note} onChange={e => setNote(e.target.value.slice(0, 500))} /><div className="char-count">{note.length}/500</div></div><button className="btn btn-accent btn-full" onClick={submit} disabled={uploading || !file}>{uploading ? <><span className="spinner" /> Uploading…</> : '🐾 Share with community'}</button></div>{authOpen && <AuthModal onClose={() => setAuthOpen(false)} onDone={() => setAuthOpen(false)} />}</div> }
+    function SavedPage() { const toast = useToast(); const [saves, setSaves] = useState([]), [loading, setLoading] = useState(true), [authOpen, setAuthOpen] = useState(false); const load = useCallback(async () => { const u = getLocalUser(); if (!u?.id) { setSaves([]); setLoading(false); return } setLoading(true); const r = await api(`/api/saves?userId=${encodeURIComponent(u.id)}`); if (r.ok) setSaves(r.data || []); else toast(r.error || 'Could not load saves'); setLoading(false) }, [toast]); useEffect(() => { load() }, [load]); const remove = async (s) => { const u = getLocalUser(); await api(`/api/save/${s.favoriteId || s.id}?userId=${encodeURIComponent(u?.id || '')}`, { method: 'DELETE' }); setSaves(p => p.filter(x => (x.favoriteId || x.id) !== (s.favoriteId || s.id))); toast('Removed from saved') }; if (loading) return <div className="page"><div className="empty"><span className="spinner" /><div className="empty-sub">Loading saved cats…</div></div></div>; if (!getLocalUser()?.id) return <div className="page"><div className="empty"><div className="empty-emoji">🔐</div><div className="empty-title">Sign in to see saved cats</div><button className="btn btn-accent" onClick={() => setAuthOpen(true)}>Signin / Signup</button></div>{authOpen && <AuthModal onClose={() => setAuthOpen(false)} onDone={() => { setAuthOpen(false); load() }} />}</div>; if (!saves.length) return <div className="page"><div className="empty"><div className="empty-emoji">🔖</div><div className="empty-title">No saved cats yet</div><div className="empty-sub">Tap bookmark on any card.</div></div></div>; return <div className="page"><div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}><div className="section-title" style={{ margin: 0 }}>Saved Cats 🔖</div><span className="saved-count">{saves.length}</span></div><div className="saved-grid">{saves.map(s => <div key={s.favoriteId || s.id} className="saved-thumb"><img src={s.imageUrl || s.url} loading="lazy" /><button className="saved-remove" onClick={() => remove(s)}>×</button></div>)}</div></div> }
+    function MemesPage({ onMemeClick, onShowInfo }) { const toast = useToast(); const [items, setItems] = useState([]), [loading, setLoading] = useState(true); useEffect(() => { api('/api/memes?limit=30').then(r => { if (r.ok) setItems(r.data || []); else toast(r.error || 'Could not load memes'); setLoading(false) }) }, []); if (loading) return <div className="page"><div className="empty"><span className="spinner" /><div className="empty-sub">Loading memes…</div></div></div>; return <div className="page"><div className="section-title">Meme Gallery 😹</div><div className="section-sub">Public memes generated by users.</div>{!items.length ? <div className="empty"><div className="empty-emoji">😹</div><div className="empty-title">No memes yet</div><div className="empty-sub">Create the first cat meme from feed or explore.</div></div> : items.map((item, index) => <CatCard key={item.id} index={index} catId={item.id} imageUrl={item.imageUrl || item.url} tags={item.tags || []} source={item.source || 'meme'} type="meme" stable={true} initialLikes={item.likes || 0} creatorNote={item.caption} onMemeClick={onMemeClick} onShowInfo={onShowInfo} onToast={toast} />)}</div> }
+    // const CAT_FACTS_LOCAL = ['Cats spend 70% of their lives sleeping 😴', 'A cat nose print is unique, like a fingerprint 🐾', 'Cats have 230 bones — humans only have 206!', 'Cats cannot taste sweetness 🍭', 'A group of cats is called a clowder 🐱🐱🐱', 'Isaac Newton invented the cat flap 🧠'];
+    // function InfoModal({ data, onClose }) { if (!data) return null; const fact = CAT_FACTS_LOCAL[seed_n((data.seed || 0) + 7, CAT_FACTS_LOCAL.length)]; return <div className="overlay" onClick={onClose}><div className="sheet" onClick={e => e.stopPropagation()}><div className="sheet-handle" /><div className="info-header"><CatAvatar seed={data.seed} size={56} /><div><div className="info-name">{data.name}</div><div className="info-handle">{data.handle}</div></div></div><div className="info-stats">{[{ label: 'Location', value: data.location }, { label: 'Mood', value: String(data.mood || '').split(' ').slice(0, 2).join(' ') }, { label: 'Source', value: data.source || '—' }].map(i => <div className="info-stat" key={i.label}><div className="info-stat-label">{i.label}</div><div className="info-stat-val">{i.value}</div></div>)}</div><div className="caption-box"><div className="caption-label">Caption</div><div className="caption-text">"{data.caption}"</div></div><div className="fact-box"><div className="fact-label">🧠 Cat Fact</div><div className="fact-text">{fact}</div></div>{data.tags?.length > 0 && <div className="card-tags" style={{ marginBottom: 16 }}>{data.tags.map(t => <span className="tag-pill" key={t}>#{t}</span>)}</div>}<button className="btn btn-primary btn-full" onClick={onClose}>Done 🐾</button></div></div> }
 
-        <!-- HTTP Cats Tab -->
-        <div id="http-cats" class="tab-content">
-            <div id="httpCatsGrid" class="http-grid"></div>
-        </div>
+    // ─── Captions context (loaded from DB + lulcat on page load) ───
+    const CaptionsCtx = createContext([]);
+    const useCaptions = () => useContext(CaptionsCtx);
 
-        <!-- Breeds Tab -->
-        <div id="breeds" class="tab-content">
-            <div id="breedsGrid" class="breed-grid"></div>
-        </div>
-    </main>
+    const CAT_FACTS_LOCAL = [
+        'Cats spend 70% of their lives sleeping 😴', 
+        'A cat nose print is unique, like a fingerprint 🐾', 
+        'Cats have 230 bones — humans only have 206!', 
+        'Cats cannot taste sweetness 🍭', 
+        'A group of cats is called a clowder 🐱🐱🐱', 
+        'Isaac Newton invented the cat flap 🧠'
+    ];
 
-    <!-- Upload Button -->
-    <!-- <button class="upload-btn" onclick="openUploadModal()" title="Upload Your Cat">📤</button> -->
+    const NAV_ITEMS = [
+        { id: 'feed', label: 'Home', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M9 22V12h6v10" /></svg> }, 
+        { id: 'explore', label: 'Explore', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg> }, 
+        { id: 'memes', label: 'Memes', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><path d="M9 9h.01M15 9h.01" /></svg> }, 
+        { id: 'upload', label: 'Upload', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg> }, 
+        { id: 'saved', label: 'Saved', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg> }
+    ];
 
-    <!-- Upload Modal -->
-    <div id="uploadModal" class="modal">
-        <div class="modal-content">
-            <span class="modal-close" onclick="closeUploadModal()">&times;</span>
-            <h2>Upload Your Cat 🐱</h2>
-            <form id="uploadForm" style="margin-top: 1.5rem;">
-                <input type="file" id="fileInput" accept="image/*" style="margin-bottom: 1rem;">
-                <input type="text" id="uploadTags" placeholder="Add tags (comma separated)">
-                <button type="submit" class="btn" style="margin-top: 1rem;">Upload</button>
-            </form>
-            <div id="uploadMessage" style="margin-top: 1rem; text-align: center;"></div>
-        </div>
-    </div>
+    // --- UPDATED INFO MODAL COMPONENT ---
+    function InfoModal({ data, onClose, factsPool }) { 
+        if (!data) return null; 
+        
+        // Pick fact safely based on seed from whatever facts list was passed down
+        const fact = factsPool[seed_n((data.seed || 0) + 7, factsPool.length)]; 
 
-    <script>
-        const API_BASE = '/api';
-        const CATAAS_API = 'https://cataas.com';
-        let allTags = [];
-        const blobImageCache = new Map();
-
-        // Initialize
-        async function init() {
-            loadRandomCat();
-            // loadCatFact();
-            // loadTags();
-            initTabs();
-        }
-
-        // Tab handling
-        function initTabs() {
-            const tabs = document.querySelectorAll('.tab');
-            tabs.forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    switchTab(tabName);
-                });
-            });
-        }
-
-        function switchTab(tabName) {
-            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-            
-            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
-            document.getElementById(tabName).classList.add('active');
-
-            if (tabName === 'http-cats') loadHTTPCats();
-            // if (tabName === 'breeds') loadBreeds();
-        }
-
-       async function cacheNextImage(url, key) {
-            let queryChar = url.includes('?') ? '&' : '?';
-            const uniqueUrl = `${url}${queryChar}_=${Math.random()}`;
-
-            const response = await fetch(uniqueUrl, { mode: 'cors' });
-            if (!response.ok) return;
-
-            const blob = await response.blob();
-            const objectUrl = URL.createObjectURL(blob);
-
-            // Replace existing
-            if (blobImageCache.has(key)) {
-                URL.revokeObjectURL(blobImageCache.get(key));
-            }
-
-            blobImageCache.set(key, objectUrl);
-        }
-
-        // Cat loading functions
-        async function loadRandomCat() {
-            showLoading();
-            try {
-                const uniqueUrl = `${CATAAS_API}/cat`;
-                let key = 'random-pic';
-                
-                if(blobImageCache.has(key)) {
-                    displayCat(blobImageCache.get(key));
-                } else {
-                    let url = `${uniqueUrl}?_=${Math.random()}`;
-                    displayCat(url);
-                }
-
-                cacheNextImage(uniqueUrl, key);
-            } catch (error) {
-                showError('Failed to load cat 😿');
-            }
-        }
-
-        async function loadRandomGif() {
-            showLoading();
-            try {
-                const uniqueUrl = `${CATAAS_API}/cat/gif`;
-                let key = 'random-gif';
-                
-                if(blobImageCache.has(key)) {
-                    displayCat(blobImageCache.get(key));
-                } else {
-                    let url = `${uniqueUrl}?_=${Math.random()}`;
-                    displayCat(url);
-                }
-
-                cacheNextImage(uniqueUrl, key);
-            } catch (error) {
-                showError('Failed to load GIF 😿');
-            }
-        }
-
-        async function loadCatWithText() {
-            const text = document.getElementById('catText').value.trim();
-            if (!text) {
-                alert('Please enter some text!');
-                return;
-            }
-
-            showLoading();
-            try {
-                const uniqueUrl = `${CATAAS_API}/cat/says/${encodeURIComponent(text)}`;
-
-                displayCat(uniqueUrl);
-            } catch (error) {
-                showError('Failed to create meme 😿');
-            }
-        }
-
-        async function loadCatByTag() {
-            const tag = document.getElementById('tagInput').value.trim();
-            if (!tag) {
-                alert('Please enter a tag!');
-                return;
-            }
-            showLoading();
-            try {
-                const uniqueUrl = `${CATAAS_API}/cat/${encodeURIComponent(tag)}`;
-
-                displayCat(uniqueUrl);
-            } catch (error) {
-                showError('Failed to load cat 😿');
-            }
-        }
-
-        async function loadCatByMood() {
-            const mood = document.getElementById('moodSelect').value;
-            showLoading();
-            try {
-                const moodTags = {
-                    happy: 'cute,funny',
-                    sad: 'cute,sleep',
-                    angry: 'funny,grumpy',
-                    curious: 'cute',
-                    sleepy: 'sleep,cute',
-                    excited: 'funny,cute'
-                };
-
-                const tags = moodTags[mood] || 'cute';
-                const uniqueUrl = `${CATAAS_API}/cat/${encodeURIComponent(tags)}`;
-
-                displayCat(uniqueUrl);
-            } catch (error) {
-                showError('Failed to load mood cat 😿');
-            }
-        }
-
-        function displayCat(url) {
-            const display = document.getElementById('catDisplay');
-            display.innerHTML = `<img src="${url}" alt="Cat" class="cat-image fade-in" loading="lazy">`;
-        }
-
-        function showLoading() {
-            const display = document.getElementById('catDisplay');
-            display.innerHTML = `
-                <div class="loading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading adorable cat...</p>
-                </div>
-            `;
-        }
-
-        function showError(message) {
-            const display = document.getElementById('catDisplay');
-            display.innerHTML = `<p style="color: var(--text-light);">${message}</p>`;
-        }
-
-        // Tag search
-        async function loadTags() {
-            try {
-                const response = await fetch(`${API_BASE}/tags`);
-                const data = await response.json();
-                if (data.success) {
-                    allTags = data.data.map(t => t.name);
-                }
-            } catch (error) {
-                console.error('Failed to load tags:', error);
-            }
-        }
-
-        async function searchTags() {
-            const query = document.getElementById('tagInput').value.trim();
-            if (!query) {
-                document.getElementById('tagSuggestions').style.display = 'none';
-                return;
-            }
-
-            const filtered = allTags.filter(tag => tag.toLowerCase().includes(query.toLowerCase())).slice(0, 10);
-            
-            const suggestionsDiv = document.getElementById('tagSuggestions');
-            if (filtered.length > 0) {
-                suggestionsDiv.innerHTML = filtered.map(tag => 
-                    `<div class="tag-suggestion" onclick="selectTag('${tag}')">${tag}</div>`
-                ).join('');
-                suggestionsDiv.style.display = 'block';
-            } else {
-                suggestionsDiv.style.display = 'none';
-            }
-        }
-
-        function selectTag(tag) {
-            document.getElementById('tagInput').value = tag;
-            document.getElementById('tagSuggestions').style.display = 'none';
-        }
-
-        // Cat fact
-        async function loadCatFact() {
-            try {
-                const response = await fetch(`${API_BASE}/fact`);
-                const data = await response.json();
-                if (data.success) {
-                    document.getElementById('catFact').textContent = data.data.fact;
-                }
-            } catch (error) {
-                console.error('Failed to load fact:', error);
-            }
-        }
-
-        // HTTP Cats
-        async function loadHTTPCats() {
-            const codes = [100, 200, 201, 204, 206, 301, 302, 304, 307, 400, 401, 403, 404, 405, 406, 408, 410, 413, 414, 418, 429, 500, 502, 503, 504];
-            const grid = document.getElementById('httpCatsGrid');
-            
-            grid.innerHTML = codes.map(code => `
-                <div class="http-card fade-in" onclick="showHTTPCat(${code})">
-                    <img src="https://http.cat/${code}" alt="HTTP ${code}" loading="lazy">
-                    <div class="http-code">${code}</div>
-                </div>
-            `).join('');
-        }
-
-        function showHTTPCat(code) {
-            displayCat(`https://http.cat/${code}`);
-            switchTab('generator');
-        }
-
-        // Breeds
-        async function loadBreeds() {
-            try {
-                const response = await fetch(`${API_BASE}/breeds`);
-                const data = await response.json();
-                if (data.success) {
-                    const grid = document.getElementById('breedsGrid');
-                    grid.innerHTML = data.data.map(breed => `
-                        <div class="breed-card fade-in">
-                            <img src="${breed.image?.url || 'https://cataas.com/cat'}" alt="${breed.name}" loading="lazy">
-                            <div class="breed-info">
-                                <div class="breed-name">${breed.name}</div>
-                                <p>${breed.temperament || 'Adorable cat'}</p>
-                            </div>
+        return (
+            <div className="overlay" onClick={onClose}>
+                <div className="sheet" onClick={e => e.stopPropagation()}>
+                    <div className="sheet-handle" />
+                    <div className="info-header">
+                        <CatAvatar seed={data.seed} size={56} />
+                        <div>
+                            <div className="info-name">{data.name}</div>
+                            <div className="info-handle">{data.handle}</div>
                         </div>
-                    `).join('');
-                }
-            } catch (error) {
-                console.error('Failed to load breeds:', error);
+                    </div>
+                    <div className="info-stats">
+                        {[
+                            { label: 'Location', value: data.location }, 
+                            { label: 'Mood', value: String(data.mood || '').split(' ').slice(0, 2).join(' ') }, 
+                            { label: 'Source', value: data.source || '—' }
+                        ].map(i => (
+                            <div className="info-stat" key={i.label}>
+                                <div className="info-stat-label">{i.label}</div>
+                                <div className="info-stat-val">{i.value}</div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="caption-box">
+                        <div className="caption-label">Caption</div>
+                        <div className="caption-text">"{data.caption}"</div>
+                    </div>
+                    <div className="fact-box">
+                        <div className="fact-label">🧠 Cat Fact</div>
+                        <div className="fact-text">{fact}</div>
+                    </div>
+                    {data.tags?.length > 0 && (
+                        <div className="card-tags" style={{ marginBottom: 16 }}>
+                            {data.tags.map(t => <span className="tag-pill" key={t}>#{t}</span>)}
+                        </div>
+                    )}
+                    <button className="btn btn-primary btn-full" onClick={onClose}>Done 🐾</button>
+                </div>
+            </div>
+        ); 
+    }
+
+    // --- UPDATED PATCHED APP COMPONENT ---
+    function PatchedApp() { 
+        const [tab, setTab] = useState('feed');
+        const [dark, setDark] = useState(() => matchMedia('(prefers-color-scheme: dark)').matches);
+        const [memeCat, setMemeCat] = useState(null);
+        const [infoData, setInfo] = useState(null);
+        const [user, setUser] = useState(() => getLocalUser());
+        const [catFacts, setCatFacts] = useState(CAT_FACTS_LOCAL);
+        // Seed immediately with local CAPTIONS so cards render before the API responds
+        const [captionsPool, setCaptionsPool] = useState(CAPTIONS);
+
+        useEffect(() => { 
+            dark ? document.documentElement.setAttribute('data-dark', '') : document.documentElement.removeAttribute('data-dark'); 
+        }, [dark]);
+
+        // Fetch facts from catfact.ninja on page load
+        useEffect(() => {
+            async function loadFacts() {
+                try {
+                    const response = await fetch('https://catfact.ninja/facts?limit=20');
+                    if (!response.ok) throw new Error('API unstable');
+                    const result = await response.json();
+                    if (result?.data?.length > 0) {
+                        setCatFacts([...result.data.map(i => i.fact), ...CAT_FACTS_LOCAL]);
+                    }
+                } catch { /* keep local fallback */ }
             }
-        }
+            loadFacts();
+        }, []);
 
-        // Upload modal
-        function openUploadModal() {
-            document.getElementById('uploadModal').classList.add('active');
-        }
-
-        function closeUploadModal() {
-            document.getElementById('uploadModal').classList.remove('active');
-        }
-
-        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const fileInput = document.getElementById('fileInput');
-            const tags = document.getElementById('uploadTags').value;
-            const messageDiv = document.getElementById('uploadMessage');
-
-            if (!fileInput.files[0]) {
-                messageDiv.innerHTML = '<p style="color: red;">Please select a file!</p>';
-                return;
+        // Fetch captions from DB (pre-processed by sync.js – no lulcat calls here)
+        useEffect(() => {
+            async function loadCaptions() {
+                try {
+                    const r = await api('/api/captions');
+                    if (r.ok && r.data) {
+                        const { captions = [], lulcats = [] } = r.data;
+                        // Merge DB captions + their lulcat variants + local seed list.
+                        // Use Set to deduplicate, then spread back to array.
+                        const merged = [...new Set([...captions, ...lulcats, ...CAPTIONS])];
+                        if (merged.length > 0) setCaptionsPool(merged);
+                    }
+                } catch { /* keep local CAPTIONS fallback */ }
             }
+            loadCaptions();
+        }, []);
 
-            const formData = new FormData();
-            formData.append('file', fileInput.files[0]);
-            formData.append('tags', tags);
+        const handleMeme = useCallback(cat => {
+          // cat is always a stable object from CatCard (already uploaded to R2)
+          // or a direct explore/mood click — wrap string just in case
+          setMemeCat(typeof cat === 'string' ? { imageUrl: cat, catId: '', tags: [], source: 'unknown', type: 'cat' } : cat);
+        }, []); 
 
-            messageDiv.innerHTML = '<p>Uploading...</p>';
+        return (
+            <ToastProvider>
+                <CaptionsCtx.Provider value={captionsPool}>
+                    <div className="topbar">
+                        <div className="logo"><span>🐾</span></div>
+                        <div className="top-actions">
+                            {user?.username && <button className="tag-chip" onClick={() => { clearLocalUser(); setUser(null) }}>{user.username} ×</button>}
+                            <button className="icon-btn" onClick={() => setDark(d => !d)}>{dark ? '☀️' : '🌙'}</button>
+                        </div>
+                    </div>
 
-            try {
-                const response = await fetch(`${API_BASE}/upload`, {
-                    method: 'POST',
-                    body: formData
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    messageDiv.innerHTML = '<p style="color: green;">✓ Upload successful!</p>';
-                    setTimeout(() => {
-                        closeUploadModal();
-                        messageDiv.innerHTML = '';
-                    }, 2000);
-                } else {
-                    messageDiv.innerHTML = `<p style="color: red;">${data.error.message}</p>`;
-                }
-            } catch (error) {
-                messageDiv.innerHTML = '<p style="color: red;">Upload failed. Please try again.</p>';
-            }
-        });
+                    {tab === 'feed' && <FeedPage onMemeClick={handleMeme} onShowInfo={setInfo} />} 
+                    {tab === 'explore' && <ExplorePage onMemeClick={handleMeme} onShowInfo={setInfo} />} 
+                    {tab === 'memes' && <MemesPage onMemeClick={handleMeme} onShowInfo={setInfo} />} 
+                    {tab === 'upload' && <UploadPage />} 
+                    {tab === 'saved' && <SavedPage />}
 
-        // Initialize app
-        init();
-    </script>
+                    <nav className="bottom-nav">
+                        {NAV_ITEMS.map(i => (
+                            <button key={i.id} className={`nav-item${tab === i.id ? ' active' : ''}`} onClick={() => setTab(i.id)}>
+                                {i.icon}<span>{i.label}</span>
+                            </button>
+                        ))}
+                    </nav>
+
+                    {memeCat && <MemeModalWithToast cat={memeCat} onClose={() => setMemeCat(null)} />} 
+                    {infoData && <InfoModal data={infoData} factsPool={catFacts} onClose={() => setInfo(null)} />}
+                </CaptionsCtx.Provider>
+            </ToastProvider>
+        ); 
+    }
+    ReactDOM.createRoot(document.getElementById('root')).render(<PatchedApp />);
+  </script>
 </body>
+
 </html>
