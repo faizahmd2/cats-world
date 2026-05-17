@@ -354,43 +354,48 @@
 
     .card-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
-      padding: 11px 12px
+      padding: 10px 12px
     }
 
     .action-btn {
-      height: 38px;
-      min-width: 38px;
+      height: 36px;
+      min-width: 36px;
       border-radius: 999px;
       background: var(--surf2);
       color: var(--ink2);
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      padding: 0 12px;
+      gap: 5px;
+      padding: 0 11px;
       font-size: 13px;
-      font-weight: 800
+      font-weight: 800;
+      transition: background .15s, color .15s, transform .1s
     }
 
+    .action-btn:active { transform: scale(.93) }
+
     .action-btn svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      stroke-width: 2;
-      fill: none
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0
     }
 
     .action-btn.liked {
-      color: var(--rose);
-      background: rgba(244, 63, 94, .1)
+      color: #e11d48;
+      background: rgba(225, 29, 72, .1)
     }
+
+    .action-btn.liked svg { fill: #e11d48 }
 
     .action-btn.saved {
       color: var(--brand);
       background: var(--brand-s)
     }
+
+    .action-btn.saved svg { fill: var(--brand) }
 
     .ml {
       margin-left: auto
@@ -526,19 +531,22 @@
       display: flex;
       align-items: flex-end;
       justify-content: center;
-      z-index: 200
+      z-index: 200;
+      overscroll-behavior: contain
     }
 
     .sheet {
       width: 100%;
       max-width: 480px;
-      max-height: 94dvh;
-      overflow: auto;
+      max-height: 92dvh;
+      overflow-y: auto;
+      overflow-x: hidden;
+      overscroll-behavior: contain;
       background: var(--surf);
       border-radius: 24px 24px 0 0;
       padding: 18px 18px calc(18px + var(--safe-b));
       box-shadow: var(--shadow2);
-      animation: sheet .25s both
+      animation: sheet .25s cubic-bezier(.32,0,.67,0) both
     }
 
     @keyframes sheet {
@@ -1121,7 +1129,7 @@
         );
       }
     function AuthModal({ onClose, onDone }) { const toast = useToast(); const [username, setUsername] = useState(''); const [password, setPassword] = useState(''); const [busy, setBusy] = useState(false); const submit = async () => { const u = username.trim(), p = password.trim(); if (!u || !p) return toast('Enter username and password 🐾'); setBusy(true); const r = await api('/api/auth', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: u, password: p }) }); setBusy(false); if (!r.ok) return toast(r.error || 'Could not sign in'); setLocalUser(r.data); toast(`Welcome, ${r.data.username} 🐱`); onDone?.(r.data); onClose() }; return <div className="overlay" onClick={onClose}><div className="sheet" onClick={e => e.stopPropagation()}><div className="sheet-handle" /><div className="auth-hero"><div className="auth-cat">🐱</div><h2>Tiny Cat Login</h2><p>Pick a username and password. Existing user signs in, new user gets created.</p></div><div className="form-group"><label className="form-label">Username</label><input className="inp" value={username} onChange={e => setUsername(e.target.value)} placeholder="e.g. faizcat" autoFocus /></div><div className="form-group"><label className="form-label">Password</label><input className="inp" value={password} onChange={e => setPassword(e.target.value)} placeholder="simple password" type="password" /></div><button className="btn btn-accent btn-full" onClick={submit} disabled={busy}>{busy ? <><span className="spinner" /> Signing in…</> : 'Signin / Signup'}</button></div></div> }
-    function CatCard({ index, catId, imageUrl, tags = [], initialLikes = 0, source = 'cataas', type = 'cat', stable = false, creatorNote = '', onMemeClick, onShowInfo, onToast, onFeedUpdate }) { const [liked, setLiked] = useState(false), [saved, setSaved] = useState(false), [lc, setLc] = useState(initialLikes || 0), [loaded, setLoaded] = useState(false), [heart, setHeart] = useState(false), [authOpen, setAuthOpen] = useState(false), [memeUploading, setMemeUploading] = useState(false); const [currentCatId, setCurrentCatId] = useState(catId), [currentUrl, setCurrentUrl] = useState(imageUrl), [currentStable, setCurrentStable] = useState(stable); const pending = useRef(null), btnRef = useRef(null), imgElRef = useRef(null); const s = index + (currentCatId ? String(currentCatId).charCodeAt(0) : 0); const name = useMemo(() => catName(s), [s]); const handle = useMemo(() => catHandle(name), [name]); const location = useMemo(() => catPlace(s), [s]); const mood = useMemo(() => catMood(s), [s]); const captionsPool = useCaptions(); const caption = creatorNote || captionsPool[seed_n(s + index * 17, captionsPool.length)];
+    function CatCard({ index, catId, imageUrl, tags = [], initialLikes = 0, source = 'unsplash', type = 'cat', stable = false, fromApi = false, creatorNote = '', onMemeClick, onShowInfo, onToast, onFeedUpdate }) { const [liked, setLiked] = useState(false), [saved, setSaved] = useState(false), [lc, setLc] = useState(initialLikes || 0), [loaded, setLoaded] = useState(false), [heart, setHeart] = useState(false), [authOpen, setAuthOpen] = useState(false), [memeUploading, setMemeUploading] = useState(false); const [currentCatId, setCurrentCatId] = useState(catId), [currentUrl, setCurrentUrl] = useState(imageUrl), [currentStable, setCurrentStable] = useState(stable && !fromApi); const pending = useRef(null), btnRef = useRef(null), imgElRef = useRef(null); const s = index + (currentCatId ? String(currentCatId).charCodeAt(0) : 0); const name = useMemo(() => catName(s), [s]); const handle = useMemo(() => catHandle(name), [name]); const location = useMemo(() => catPlace(s), [s]); const mood = useMemo(() => catMood(s), [s]); const captionsPool = useCaptions(); const caption = creatorNote || captionsPool[seed_n(s + index * 17, captionsPool.length)];
       /* Stabilise a live/cataas cat by reading pixels from the already-rendered <img> element
          via an offscreen canvas — zero extra network requests, always the exact same image. */
       const stabiliseCat = useCallback(async () => {
@@ -1156,9 +1164,9 @@
         setMemeUploading(false);
         onMemeClick?.({ catId: stableCat.id, imageUrl: stableCat.imageUrl || stableCat.url, tags, source: stableCat.source || source, type: stableCat.type || type, stable: stableCat.stable });
       }, [memeUploading, stabiliseCat, tags, source, type, onMemeClick]);
-      const infoData = { seed: s, id: currentCatId, name, handle, location, mood, caption, tags, imageUrl: currentUrl, source, type, stable: currentStable }; return <article className="cat-card" style={{ animationDelay: `${Math.min(index * .04, .32)}s` }}><div className="card-header"><button style={{ all: 'unset', display: 'flex', gap: 10, alignItems: 'center', flex: 1, cursor: 'pointer' }} onClick={() => onShowInfo?.(infoData)}><CatAvatar seed={s} /><div className="card-user"><div className="name">{name}</div><div className="meta">{handle} · {location}</div></div></button>{!currentStable && <span className="badge">LIVE</span>}{type === 'meme' && <span className="badge">MEME</span>}</div><div className="img-wrap" onDoubleClick={handleLike}>{!loaded && <div className="empty" style={{ padding: 0, height: '100%', justifyContent: 'center' }}><span className="spinner" /></div>}<img ref={imgElRef} className="cat-img" src={currentUrl} alt="A cat" loading="lazy" onLoad={() => setLoaded(true)} crossOrigin="anonymous" />{heart && <div className="heart-burst">❤️</div>}</div><div className="card-actions"><button ref={btnRef} className={`action-btn${liked ? ' liked' : ''}`} onClick={handleLike}>❤️ {lc.toLocaleString()}</button><button className="action-btn" onClick={handleMeme} disabled={memeUploading}>{memeUploading ? <span className="spinner" style={{width:16,height:16}} /> : '😹'} Meme</button><button className="action-btn" onClick={() => onShowInfo?.(infoData)}>ⓘ</button><button className={`action-btn ml${saved ? ' saved' : ''}`} onClick={handleSave}>🔖</button></div><div className="card-caption">{caption}{tags.length > 0 && <div className="card-tags">{tags.slice(0, 5).map(t => <span key={t} className="tag-pill">#{t}</span>)}</div>}</div>{authOpen && <AuthModal onClose={() => setAuthOpen(false)} onDone={() => { const a = pending.current; pending.current = null; setTimeout(() => { if (a === 'like') handleLike(); if (a === 'save') handleSave() }, 60) }} />}</article> }
+      const infoData = { seed: s, id: currentCatId, name, handle, location, mood, caption, tags, imageUrl: currentUrl, source, type, stable: currentStable }; return <article className="cat-card" style={{ animationDelay: `${Math.min(index * .04, .32)}s` }}><div className="card-header"><button style={{ all: 'unset', display: 'flex', gap: 10, alignItems: 'center', flex: 1, cursor: 'pointer' }} onClick={() => onShowInfo?.(infoData)}><CatAvatar seed={s} /><div className="card-user"><div className="name">{name}</div><div className="meta">{handle} · {location}</div></div></button>{!currentStable && <span className="badge">LIVE</span>}{type === 'meme' && <span className="badge">MEME</span>}</div><div className="img-wrap" onDoubleClick={handleLike}>{!loaded && <div className="empty" style={{ padding: 0, height: '100%', justifyContent: 'center' }}><span className="spinner" /></div>}<img ref={imgElRef} className="cat-img" src={currentUrl} alt="A cat" loading="lazy" onLoad={() => setLoaded(true)} crossOrigin="anonymous" />{heart && <div className="heart-burst">❤️</div>}</div><div className="card-actions"><button ref={btnRef} className={`action-btn${liked ? ' liked' : ''}`} onClick={handleLike}><svg viewBox="0 0 24 24" fill={liked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg> {lc.toLocaleString()}</button><button className="action-btn" onClick={handleMeme} disabled={memeUploading}>{memeUploading ? <span className="spinner" style={{width:14,height:14}} /> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>} <span style={{fontSize:12}}>Meme</span></button><button className="action-btn" onClick={() => onShowInfo?.(infoData)}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="8"/><line x1="12" y1="12" x2="12" y2="16"/></svg></button><button className={`action-btn ml${saved ? ' saved' : ''}`} onClick={handleSave}><svg viewBox="0 0 24 24" fill={saved ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg></button></div><div className="card-caption">{caption}{tags.length > 0 && <div className="card-tags">{tags.slice(0, 5).map(t => <span key={t} className="tag-pill">#{t}</span>)}</div>}</div>{authOpen && <AuthModal onClose={() => setAuthOpen(false)} onDone={() => { const a = pending.current; pending.current = null; setTimeout(() => { if (a === 'like') handleLike(); if (a === 'save') handleSave() }, 60) }} />}</article> }
     const FEED_TAGS = ['All', 'cute', 'funny', 'sleeping', 'kitten', 'fluffy', 'grumpy', 'black', 'white', 'orange', 'playful', 'chonky', 'loaf', 'tabby', 'derp', 'desi', 'billi', 'nawab'];
-    function FeedPage({ onMemeClick, onShowInfo }) { const toast = useToast(); const [tag, setTag] = useState('All'), [items, setItems] = useState([]), [loading, setLoading] = useState(false); const sent = useRef(null); const captionsPool = useCaptions(); const loadMore = useCallback(async () => { if (loading) return; setLoading(true); const qs = new URLSearchParams({ limit: '8' }); if (tag && tag !== 'All') qs.set('tag', tag); const r = await api(`/api/feed?${qs}`); if (r.ok) setItems(p => { const base = p.length; return [...p, ...(r.data || []).map((x, i) => ({ id: x.id, catId: x.id, url: x.imageUrl || x.url, tags: x.tags || [], index: base + i, source: x.source || 'cataas', type: x.type || 'cat', likes: x.likes || 0, stable: !!x.stable, caption: x.caption || captionsPool[seed_n((base + i) * 17, captionsPool.length)] || '' }))] }); else toast(r.error || 'Could not load cats'); setLoading(false) }, [loading, tag, toast, captionsPool]); const handleFeedUpdate = useCallback((index, stableCat) => { setItems(prev => prev.map(item => item.index === index ? { ...item, id: stableCat.id, catId: stableCat.id, url: stableCat.imageUrl || stableCat.url, stable: true } : item)) }, []); useEffect(() => { setItems([]); sent.current = null }, [tag]); useEffect(() => { if (!items.length && !loading) loadMore() }, [items.length, loading, loadMore]); useEffect(() => { const el = sent.current; if (!el) return; const io = new IntersectionObserver(e => { if (e[0].isIntersecting) loadMore() }, { rootMargin: '600px' }); io.observe(el); return () => io.disconnect() }, [loadMore, items.length]); return <div className="page"><div className="tag-scroll">{FEED_TAGS.map(t => <button key={t} className={`tag-chip${tag === t ? ' active' : ''}`} onClick={() => setTag(t)}>{t}</button>)}</div>{items.map(item => <CatCard key={`${item.id}-${item.index}`} index={item.index} catId={item.catId} imageUrl={item.url} tags={item.tags} source={item.source} type={item.type} stable={item.stable} initialLikes={item.likes} creatorNote={item.caption} onMemeClick={onMemeClick} onShowInfo={onShowInfo} onToast={toast} onFeedUpdate={handleFeedUpdate} />)}<div ref={sent} className="empty" style={{ padding: 24 }}>{loading ? <><span className="spinner" /><div className="empty-sub">Loading more cats…</div></> : <button className="btn btn-ghost" onClick={loadMore}>Load more cats</button>}</div></div> }
+    function FeedPage({ onMemeClick, onShowInfo }) { const toast = useToast(); const [tag, setTag] = useState('All'), [items, setItems] = useState([]), [loading, setLoading] = useState(false); const sent = useRef(null); const captionsPool = useCaptions(); const loadMore = useCallback(async () => { if (loading) return; setLoading(true); const qs = new URLSearchParams({ limit: '20' }); if (tag && tag !== 'All') qs.set('tag', tag); const r = await api(`/api/feed?${qs}`); if (r.ok) setItems(p => { const base = p.length; return [...p, ...(r.data || []).map((x, i) => ({ id: x.id, catId: x.id, url: x.imageUrl || x.url, tags: x.tags || [], index: base + i, source: x.source || 'unsplash', type: x.type || 'cat', likes: x.likes || 0, stable: !!x.stable, fromApi: !!x.fromApi, caption: x.caption || captionsPool[seed_n((base + i) * 17, captionsPool.length)] || '' }))] }); else toast(r.error || 'Could not load cats'); setLoading(false) }, [loading, tag, toast, captionsPool]); const handleFeedUpdate = useCallback((index, stableCat) => { setItems(prev => prev.map(item => item.index === index ? { ...item, id: stableCat.id, catId: stableCat.id, url: stableCat.imageUrl || stableCat.url, stable: true, fromApi: false } : item)) }, []); useEffect(() => { setItems([]); sent.current = null }, [tag]); useEffect(() => { if (!items.length && !loading) loadMore() }, [items.length, loading, loadMore]); useEffect(() => { const el = sent.current; if (!el) return; const io = new IntersectionObserver(e => { if (e[0].isIntersecting) loadMore() }, { rootMargin: '800px' }); io.observe(el); return () => io.disconnect() }, [loadMore, items.length]); return <div className="page"><div className="tag-scroll">{FEED_TAGS.map(t => <button key={t} className={`tag-chip${tag === t ? ' active' : ''}`} onClick={() => setTag(t)}>{t}</button>)}</div>{items.map(item => <CatCard key={`${item.id}-${item.index}`} index={item.index} catId={item.catId} imageUrl={item.url} tags={item.tags} source={item.source} type={item.type} stable={item.stable} fromApi={item.fromApi} initialLikes={item.likes} creatorNote={item.caption} onMemeClick={onMemeClick} onShowInfo={onShowInfo} onToast={toast} onFeedUpdate={handleFeedUpdate} />)}<div ref={sent} style={{ padding: 24, display: 'flex', justifyContent: 'center' }}>{loading ? <><span className="spinner" style={{marginRight:8}} /><span style={{fontSize:13,color:'var(--ink3)'}}>Loading more cats…</span></> : null}</div></div> }
     function ExplorePage({ onMemeClick, onShowInfo }) { const toast = useToast(); const [open, setOpen] = useState('meme'); return <div className="page"><div className="section-title">Explore</div><div className="section-sub">Meme generator, AI cat studio, mood cats, and desi cat names.</div><div className="explore-grid">{[['mood', '🎭', 'Mood Matcher', 'Pick a vibe and get a matching cat'], ['ai', '✨', 'Cat Image Studio', 'Describe a cat and generate a fresh image'], ['meme', '😹', 'Meme Generator', 'Add text, choose placement, save to gallery'], ['name', '🏷️', 'Cat Name Mixer', 'Generate funny desi cat names']].map(s => <div className="explore-card" key={s[0]}><button className="explore-head" style={{ width: '100%', textAlign: 'left' }} onClick={() => setOpen(open === s[0] ? '' : s[0])}><div className="ec-emoji">{s[1]}</div><div style={{ flex: 1 }}><div className="ec-title">{s[2]}</div><div className="ec-sub">{s[3]}</div></div><b>{open === s[0] ? '−' : '+'}</b></button>{open === s[0] && <div className="expand">{s[0] === 'mood' && <MoodBox onMemeClick={onMemeClick} onShowInfo={onShowInfo} />} {s[0] === 'ai' && <AIBox onMemeClick={onMemeClick} toast={toast} />} {s[0] === 'meme' && <MemeStarter onMemeClick={onMemeClick} />} {s[0] === 'name' && <NameBox />}</div>}</div>)}</div></div> }
     function MoodBox({ onMemeClick, onShowInfo }) {
       const toast = useToast();
@@ -1406,7 +1414,7 @@
         { id: 'explore', label: 'Explore', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg> }, 
         { id: 'memes', label: 'Memes', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="10" /><path d="M8 14s1.5 2 4 2 4-2 4-2" /><path d="M9 9h.01M15 9h.01" /></svg> }, 
         { id: 'upload', label: 'Upload', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><path d="M17 8l-5-5-5 5" /><path d="M12 3v12" /></svg> }, 
-        { id: 'saved', label: 'Saved', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg> }
+        { id: 'saved', label: 'Saved', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><path d="M19 21l-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" /></svg> }
     ];
 
     // --- UPDATED INFO MODAL COMPONENT ---

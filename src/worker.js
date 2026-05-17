@@ -1,10 +1,10 @@
 // ╔═══════════════════════════════════════════════════════╗
-// ║          PurrfectHub – Cloudflare Worker v4-clean     ║
-// ║  D1 DB · R2 BUCKET · Workers AI optional             ║
+// ║          PurrfectHub – Cloudflare Worker v5           ║
+// ║  D1 DB · R2 BUCKET · Unsplash API · Workers AI       ║
 // ╚═══════════════════════════════════════════════════════╝
 
-const CATAAS = 'https://cataas.com';
 const POLLINATIONS = 'https://image.pollinations.ai/prompt';
+const UNSPLASH_API = 'https://api.unsplash.com';
 
 import dashboardHTML from './index.html';
 
@@ -416,77 +416,117 @@ async function apiAuth(req, env) {
 // Feed
 // ═══════════════════════════════════════════════════════════
 
+// Pick a random caption from DB captions table
+async function getRandomCaption(env) {
+  try {
+    const row = await env.DB.prepare(
+      `SELECT original_text FROM cat_captions WHERE is_active = 1 ORDER BY RANDOM() LIMIT 1`
+    ).first();
+    return row?.original_text || '';
+  } catch {
+    return '';
+  }
+}
+
+// Fetch multiple captions at once for efficiency
+async function getRandomCaptions(env, count) {
+  try {
+    const res = await env.DB.prepare(
+      `SELECT original_text FROM cat_captions WHERE is_active = 1 ORDER BY RANDOM() LIMIT ?`
+    ).bind(count).all();
+    return (res.results || []).map(r => r.original_text).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+// Normalize an Unsplash photo object to our feed item shape
+function unsplashToFeedItem(photo, caption) {
+  const tags = [];
+  // Derive tags from alt_description and description
+  const desc = (photo.alt_description || photo.description || '').toLowerCase();
+  for (const kw of ['kitten', 'fluffy', 'orange', 'black', 'white', 'sleeping', 'cute', 'funny', 'tabby', 'calico', 'ginger', 'stray']) {
+    if (desc.includes(kw)) tags.push(kw);
+  }
+  if (!tags.length) tags.push('cat');
+
+  return {
+    id: `unsplash-${photo.id}`,
+    url: photo.urls?.regular || photo.urls?.small || '',
+    imageUrl: photo.urls?.regular || photo.urls?.small || '',
+    sourceUrl: photo.links?.html || '',
+    source: 'unsplash',
+    type: 'cat',
+    tags,
+    title: photo.alt_description || 'Cat photo',
+    caption: caption || photo.description || '',
+    likes: 0,
+    views: 0,
+    stable: false,            // must be uploaded to R2 before meme/like
+    fromApi: true,
+    unsplashId: photo.id,
+    photographer: photo.user?.name || '',
+    photographerUrl: photo.user?.links?.html || '',
+  };
+}
+
 async function apiFeed(req, env) {
   const url = new URL(req.url);
   const tag = url.searchParams.get('tag') || '';
-  const lim = Math.min(20, Math.max(4, parseInt(url.searchParams.get('limit') || '8')));
+  const lim = Math.min(40, Math.max(4, parseInt(url.searchParams.get('limit') || '20')));
 
-  const dbLimit = Math.ceil(lim / 2);
+  const half = Math.ceil(lim / 2);
+
+  // ── 1. DB items ──────────────────────────────────────────
   let rows = [];
-
-  if (tag) {
-    const res = await env.DB.prepare(
-      `SELECT *
-       FROM cats
-       WHERE status = 'active'
-         AND type != 'meme'
-         AND tags LIKE ?
-       ORDER BY RANDOM()
-       LIMIT ?`
-    ).bind(`%${tag}%`, dbLimit).all();
-
-    rows = res.results || [];
-  } else {
-    const res = await env.DB.prepare(
-      `SELECT *
-       FROM cats
-       WHERE status = 'active'
-         AND type != 'meme'
-       ORDER BY RANDOM()
-       LIMIT ?`
-    ).bind(dbLimit).all();
-
-    rows = res.results || [];
-  }
-
-  const items = rows.map(rowToCat);
-
-  const need = lim - items.length;
-
-  if (need > 0) {
-    const fallbackTags = [
-      'cute', 'funny', 'sleeping', 'kitten', 'fluffy', 'grumpy',
-      'black', 'white', 'orange', 'playful', 'chonky', 'loaf',
-      'tabby', 'derp', 'tuxedo', 'calico',
-    ];
-
-    for (let i = 0; i < need; i++) {
-      const picked = tag || fallbackTags[Math.floor(Math.random() * fallbackTags.length)];
-      const seed = `${Date.now()}-${i}-${Math.random().toString(36).slice(2)}`;
-      const catUrl = `${CATAAS}/cat/${encodeURIComponent(picked)}?v=${encodeURIComponent(seed)}`;
-
-      items.push({
-        id: `live-${crypto.randomUUID()}`,
-        url: catUrl,
-        imageUrl: catUrl,
-        sourceUrl: catUrl,
-        source: 'cataas',
-        type: 'cat',
-        tags: [picked],
-        title: '',
-        caption: '',
-        likes: 0,
-        views: 0,
-        stable: false,
-      });
+  try {
+    if (tag) {
+      const res = await env.DB.prepare(
+        `SELECT * FROM cats
+         WHERE status = 'active' AND type != 'meme' AND tags LIKE ?
+         ORDER BY RANDOM() LIMIT ?`
+      ).bind(`%${tag}%`, half).all();
+      rows = res.results || [];
+    } else {
+      const res = await env.DB.prepare(
+        `SELECT * FROM cats
+         WHERE status = 'active' AND type != 'meme'
+         ORDER BY RANDOM() LIMIT ?`
+      ).bind(half).all();
+      rows = res.results || [];
     }
+  } catch { rows = []; }
+
+  const dbItems = rows.map(rowToCat);
+
+  // ── 2. Unsplash items ────────────────────────────────────
+  const apiCount = lim - dbItems.length;
+  let apiItems = [];
+
+  if (apiCount > 0 && env.unsplash_client_id) {
+    try {
+      const query = tag && tag !== 'All' ? `cats ${tag}` : 'cats';
+      const unsplashUrl = `${UNSPLASH_API}/photos/random?client_id=${env.unsplash_client_id}&count=${apiCount}&query=${encodeURIComponent(query)}`;
+      const res = await fetch(unsplashUrl, { headers: { 'Accept-Version': 'v1' } });
+
+      if (res.ok) {
+        const photos = await res.json();
+        // Fetch captions batch for API items
+        const captions = await getRandomCaptions(env, photos.length);
+        apiItems = photos.map((photo, i) =>
+          unsplashToFeedItem(photo, captions[i % captions.length] || '')
+        );
+      }
+    } catch { /* silently skip – DB items still returned */ }
   }
 
-  items.sort(() => Math.random() - 0.5);
+  // ── 3. Merge + shuffle ───────────────────────────────────
+  const merged = [...dbItems, ...apiItems];
+  merged.sort(() => Math.random() - 0.5);
 
   return {
     ok: true,
-    data: items,
+    data: merged,
     hasMore: true,
   };
 }
@@ -611,30 +651,20 @@ async function apiLike(req, env) {
     userId,
   });
 
-  const existingFav = await env.DB.prepare(
-    `SELECT id, status
-     FROM favorites
-     WHERE user_id = ? AND cat_id = ?`
+  // Check if already liked (we track likes via a separate likes_log concept
+  // using the cat's like count — we just increment once per user via a simple
+  // idempotency check using favorites table with status='liked' NOT 'active')
+  const existingLike = await env.DB.prepare(
+    `SELECT id, status FROM favorites
+     WHERE user_id = ? AND cat_id = ? AND status = 'liked'`
   ).bind(userId, cat.id).first();
 
-  if (!existingFav) {
+  if (!existingLike) {
+    // Insert a 'liked' status row (separate from 'active' save rows)
     await env.DB.prepare(
-      `INSERT INTO favorites (id, user_id, cat_id, status)
-       VALUES (?, ?, ?, 'active')`
+      `INSERT OR IGNORE INTO favorites (id, user_id, cat_id, status)
+       VALUES (?, ?, ?, 'liked')`
     ).bind(crypto.randomUUID(), userId, cat.id).run();
-
-    await env.DB.prepare(
-      `UPDATE cats
-       SET likes = COALESCE(likes, 0) + 1,
-           modified_at = CURRENT_TIMESTAMP
-       WHERE id = ?`
-    ).bind(cat.id).run();
-  } else if (existingFav.status !== 'active') {
-    await env.DB.prepare(
-      `UPDATE favorites
-       SET status = 'active'
-       WHERE user_id = ? AND cat_id = ?`
-    ).bind(userId, cat.id).run();
 
     await env.DB.prepare(
       `UPDATE cats
@@ -645,16 +675,14 @@ async function apiLike(req, env) {
   }
 
   const updated = await env.DB.prepare(
-    `SELECT *
-     FROM cats
-     WHERE id = ?`
+    `SELECT * FROM cats WHERE id = ?`
   ).bind(cat.id).first();
 
   return {
     ok: true,
     data: {
       ...rowToCat(updated),
-      alreadyLiked: !!existingFav && existingFav.status === 'active',
+      alreadyLiked: !!existingLike,
     },
   };
 }
@@ -670,24 +698,15 @@ async function apiSave(req, env, seg) {
     }
 
     const fav = await env.DB.prepare(
-      `SELECT cat_id
-       FROM favorites
+      `SELECT cat_id FROM favorites
        WHERE id = ? AND user_id = ? AND status = 'active'`
     ).bind(favId, userId).first();
 
     if (fav) {
       await env.DB.prepare(
-        `UPDATE favorites
-         SET status = 'removed'
+        `UPDATE favorites SET status = 'removed'
          WHERE id = ? AND user_id = ?`
       ).bind(favId, userId).run();
-
-      await env.DB.prepare(
-        `UPDATE cats
-         SET likes = CASE WHEN likes > 0 THEN likes - 1 ELSE 0 END,
-             modified_at = CURRENT_TIMESTAMP
-         WHERE id = ?`
-      ).bind(fav.cat_id).run();
     }
 
     return { ok: true };
@@ -703,76 +722,35 @@ async function apiSave(req, env, seg) {
   const user = await getUser(env, userId);
   if (!user) return { ok: false, error: 'Invalid user. Please sign in again.' };
 
-  const cat = await ensureStableCat(env, {
-    ...body,
-    userId,
-  });
+  const cat = await ensureStableCat(env, { ...body, userId });
 
+  // Only look at 'active' saves, not 'liked' rows
   const existing = await env.DB.prepare(
-    `SELECT id, status
-     FROM favorites
-     WHERE user_id = ? AND cat_id = ?`
+    `SELECT id, status FROM favorites
+     WHERE user_id = ? AND cat_id = ? AND status IN ('active', 'removed')`
   ).bind(userId, cat.id).first();
 
   if (existing) {
-    if (existing.status !== 'active') {
-      await env.DB.prepare(
-        `UPDATE favorites
-         SET status = 'active'
-         WHERE id = ?`
-      ).bind(existing.id).run();
-
-      await env.DB.prepare(
-        `UPDATE cats
-         SET likes = COALESCE(likes, 0) + 1,
-             modified_at = CURRENT_TIMESTAMP
-         WHERE id = ?`
-      ).bind(cat.id).run();
+    if (existing.status === 'active') {
+      const updated = await env.DB.prepare(`SELECT * FROM cats WHERE id = ?`).bind(cat.id).first();
+      return { ok: true, data: { favoriteId: existing.id, ...rowToCat(updated), alreadySaved: true } };
     }
+    // Re-activate removed save
+    await env.DB.prepare(
+      `UPDATE favorites SET status = 'active' WHERE id = ?`
+    ).bind(existing.id).run();
 
-    const updated = await env.DB.prepare(
-      `SELECT *
-       FROM cats
-       WHERE id = ?`
-    ).bind(cat.id).first();
-
-    return {
-      ok: true,
-      data: {
-        favoriteId: existing.id,
-        ...rowToCat(updated),
-        alreadySaved: existing.status === 'active',
-      },
-    };
+    const updated = await env.DB.prepare(`SELECT * FROM cats WHERE id = ?`).bind(cat.id).first();
+    return { ok: true, data: { favoriteId: existing.id, ...rowToCat(updated), alreadySaved: false } };
   }
 
   const favId = crypto.randomUUID();
-
   await env.DB.prepare(
-    `INSERT INTO favorites (id, user_id, cat_id, status)
-     VALUES (?, ?, ?, 'active')`
+    `INSERT INTO favorites (id, user_id, cat_id, status) VALUES (?, ?, ?, 'active')`
   ).bind(favId, userId, cat.id).run();
 
-  await env.DB.prepare(
-    `UPDATE cats
-     SET likes = COALESCE(likes, 0) + 1,
-         modified_at = CURRENT_TIMESTAMP
-     WHERE id = ?`
-  ).bind(cat.id).run();
-
-  const updated = await env.DB.prepare(
-    `SELECT *
-     FROM cats
-     WHERE id = ?`
-  ).bind(cat.id).first();
-
-  return {
-    ok: true,
-    data: {
-      favoriteId: favId,
-      ...rowToCat(updated),
-    },
-  };
+  const updated = await env.DB.prepare(`SELECT * FROM cats WHERE id = ?`).bind(cat.id).first();
+  return { ok: true, data: { favoriteId: favId, ...rowToCat(updated) } };
 }
 
 async function apiGetSaves(req, env) {
@@ -793,7 +771,8 @@ async function apiGetSaves(req, env) {
      WHERE f.user_id = ?
        AND f.status = 'active'
        AND c.status = 'active'
-     ORDER BY f.created_at DESC`
+     ORDER BY f.created_at DESC
+     LIMIT 200`
   ).bind(userId).all();
 
   const data = (res.results || []).map(row => ({
