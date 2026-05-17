@@ -337,6 +337,7 @@ function rowToCat(row) {
   return {
     id: row.id,
     creatorId: row.creator_id || null,
+    creatorUsername: row.creator_username || null,
     url: row.image_url,
     imageUrl: row.image_url,
     sourceUrl: row.source_url,
@@ -353,6 +354,9 @@ function rowToCat(row) {
     createdAt: row.created_at,
     modifiedAt: row.modified_at,
     stable: true,
+    fromApi: false,
+    userLiked: false,
+    userSaved: false,
   };
 }
 
@@ -460,8 +464,8 @@ function unsplashToFeedItem(photo, caption) {
     tags,
     title: photo.alt_description || 'Cat photo',
     caption: caption || photo.description || '',
-    likes: 0,
-    views: 0,
+    likes: photo.likes || 0,
+    views: photo.views || 0,
     stable: false,            // must be uploaded to R2 before meme/like
     fromApi: true,
     unsplashId: photo.id,
@@ -474,32 +478,61 @@ async function apiFeed(req, env) {
   const url = new URL(req.url);
   const tag = url.searchParams.get('tag') || '';
   const lim = Math.min(40, Math.max(4, parseInt(url.searchParams.get('limit') || '20')));
+  const userId = url.searchParams.get('userId') || '';
 
-  const half = Math.ceil(lim / 2);
-
-  // ── 1. DB items ──────────────────────────────────────────
+  // ── 1. DB items (up to half the limit) ──────────────────
   let rows = [];
   try {
     if (tag) {
       const res = await env.DB.prepare(
-        `SELECT * FROM cats
-         WHERE status = 'active' AND type != 'meme' AND tags LIKE ?
+        `SELECT c.*, u.username AS creator_username FROM cats c
+         LEFT JOIN users u ON u.id = c.creator_id
+         WHERE c.status = 'active' AND c.type != 'meme' AND c.tags LIKE ?
          ORDER BY RANDOM() LIMIT ?`
-      ).bind(`%${tag}%`, half).all();
+      ).bind(`%${tag}%`, lim).all();
       rows = res.results || [];
     } else {
       const res = await env.DB.prepare(
-        `SELECT * FROM cats
-         WHERE status = 'active' AND type != 'meme'
+        `SELECT c.*, u.username AS creator_username FROM cats c
+         LEFT JOIN users u ON u.id = c.creator_id
+         WHERE c.status = 'active' AND c.type != 'meme'
          ORDER BY RANDOM() LIMIT ?`
-      ).bind(half).all();
+      ).bind(lim).all();
       rows = res.results || [];
     }
   } catch { rows = []; }
 
-  const dbItems = rows.map(rowToCat);
+  // Limit DB to at most half so there's always room for API items
+  const dbHalf = Math.min(rows.length, Math.ceil(lim / 2));
+  const dbRows = rows.slice(0, dbHalf);
+  let dbItems = dbRows.map(rowToCat);
 
-  // ── 2. Unsplash items ────────────────────────────────────
+  // ── 2. Fetch user's liked/saved cat IDs if logged in ────
+  let likedIds = new Set();
+  let savedIds = new Set();
+  if (userId) {
+    try {
+      const [likedRes, savedRes] = await Promise.all([
+        env.DB.prepare(
+          `SELECT cat_id FROM favorites WHERE user_id = ? AND status = 'liked'`
+        ).bind(userId).all(),
+        env.DB.prepare(
+          `SELECT cat_id FROM favorites WHERE user_id = ? AND status = 'active'`
+        ).bind(userId).all(),
+      ]);
+      likedIds = new Set((likedRes.results || []).map(r => r.cat_id));
+      savedIds = new Set((savedRes.results || []).map(r => r.cat_id));
+    } catch { /* non-fatal */ }
+  }
+
+  // Attach userLiked / userSaved to DB items
+  dbItems = dbItems.map(item => ({
+    ...item,
+    userLiked: likedIds.has(item.id),
+    userSaved: savedIds.has(item.id),
+  }));
+
+  // ── 3. Unsplash items ────────────────────────────────────
   const apiCount = lim - dbItems.length;
   let apiItems = [];
 
@@ -511,16 +544,19 @@ async function apiFeed(req, env) {
 
       if (res.ok) {
         const photos = await res.json();
-        // Fetch captions batch for API items
-        const captions = await getRandomCaptions(env, photos.length);
-        apiItems = photos.map((photo, i) =>
-          unsplashToFeedItem(photo, captions[i % captions.length] || '')
-        );
+        const captions = await getRandomCaptions(env, Math.max(photos.length, 1));
+        apiItems = photos.map((photo, i) => ({
+          ...unsplashToFeedItem(photo, captions[i % captions.length] || ''),
+          // Always 0 for API items — real likes only tracked after upload to DB
+          likes: 0,
+          userLiked: false,
+          userSaved: false,
+        }));
       }
-    } catch { /* silently skip – DB items still returned */ }
+    } catch { /* silently skip */ }
   }
 
-  // ── 3. Merge + shuffle ───────────────────────────────────
+  // ── 4. Merge + shuffle ───────────────────────────────────
   const merged = [...dbItems, ...apiItems];
   merged.sort(() => Math.random() - 0.5);
 
@@ -534,20 +570,32 @@ async function apiFeed(req, env) {
 async function apiMemes(req, env) {
   const url = new URL(req.url);
   const lim = Math.min(30, Math.max(6, parseInt(url.searchParams.get('limit') || '18')));
+  const userId = url.searchParams.get('userId') || '';
 
   const res = await env.DB.prepare(
-    `SELECT *
-     FROM cats
-     WHERE status = 'active'
-       AND type = 'meme'
-     ORDER BY created_at DESC
+    `SELECT c.*, u.username AS creator_username
+     FROM cats c
+     LEFT JOIN users u ON u.id = c.creator_id
+     WHERE c.status = 'active' AND c.type = 'meme'
+     ORDER BY c.created_at DESC
      LIMIT ?`
   ).bind(lim).all();
 
-  return {
-    ok: true,
-    data: (res.results || []).map(rowToCat),
-  };
+  let items = (res.results || []).map(rowToCat);
+
+  if (userId) {
+    try {
+      const [likedRes, savedRes] = await Promise.all([
+        env.DB.prepare(`SELECT cat_id FROM favorites WHERE user_id = ? AND status = 'liked'`).bind(userId).all(),
+        env.DB.prepare(`SELECT cat_id FROM favorites WHERE user_id = ? AND status = 'active'`).bind(userId).all(),
+      ]);
+      const likedIds = new Set((likedRes.results || []).map(r => r.cat_id));
+      const savedIds = new Set((savedRes.results || []).map(r => r.cat_id));
+      items = items.map(item => ({ ...item, userLiked: likedIds.has(item.id), userSaved: savedIds.has(item.id) }));
+    } catch { /* non-fatal */ }
+  }
+
+  return { ok: true, data: items };
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -646,45 +694,38 @@ async function apiLike(req, env) {
   const user = await getUser(env, userId);
   if (!user) return { ok: false, error: 'Invalid user. Please sign in again.' };
 
-  const cat = await ensureStableCat(env, {
-    ...body,
-    userId,
-  });
+  const cat = await ensureStableCat(env, { ...body, userId });
 
-  // Check if already liked (we track likes via a separate likes_log concept
-  // using the cat's like count — we just increment once per user via a simple
-  // idempotency check using favorites table with status='liked' NOT 'active')
+  // Check for existing 'liked' row (likes are separate from saves)
   const existingLike = await env.DB.prepare(
-    `SELECT id, status FROM favorites
-     WHERE user_id = ? AND cat_id = ? AND status = 'liked'`
+    `SELECT id, status FROM favorites WHERE user_id = ? AND cat_id = ? AND status = 'liked'`
   ).bind(userId, cat.id).first();
 
-  if (!existingLike) {
-    // Insert a 'liked' status row (separate from 'active' save rows)
+  if (existingLike) {
+    // Toggle off — unlike
     await env.DB.prepare(
-      `INSERT OR IGNORE INTO favorites (id, user_id, cat_id, status)
-       VALUES (?, ?, ?, 'liked')`
-    ).bind(crypto.randomUUID(), userId, cat.id).run();
+      `DELETE FROM favorites WHERE id = ?`
+    ).bind(existingLike.id).run();
 
     await env.DB.prepare(
-      `UPDATE cats
-       SET likes = COALESCE(likes, 0) + 1,
-           modified_at = CURRENT_TIMESTAMP
-       WHERE id = ?`
+      `UPDATE cats SET likes = MAX(0, COALESCE(likes, 0) - 1), modified_at = CURRENT_TIMESTAMP WHERE id = ?`
     ).bind(cat.id).run();
+
+    const updated = await env.DB.prepare(`SELECT * FROM cats WHERE id = ?`).bind(cat.id).first();
+    return { ok: true, data: { ...rowToCat(updated), userLiked: false, unliked: true } };
   }
 
-  const updated = await env.DB.prepare(
-    `SELECT * FROM cats WHERE id = ?`
-  ).bind(cat.id).first();
+  // Like
+  await env.DB.prepare(
+    `INSERT OR IGNORE INTO favorites (id, user_id, cat_id, status) VALUES (?, ?, ?, 'liked')`
+  ).bind(crypto.randomUUID(), userId, cat.id).run();
 
-  return {
-    ok: true,
-    data: {
-      ...rowToCat(updated),
-      alreadyLiked: !!existingLike,
-    },
-  };
+  await env.DB.prepare(
+    `UPDATE cats SET likes = COALESCE(likes, 0) + 1, modified_at = CURRENT_TIMESTAMP WHERE id = ?`
+  ).bind(cat.id).run();
+
+  const updated = await env.DB.prepare(`SELECT * FROM cats WHERE id = ?`).bind(cat.id).first();
+  return { ok: true, data: { ...rowToCat(updated), userLiked: true } };
 }
 
 async function apiSave(req, env, seg) {
